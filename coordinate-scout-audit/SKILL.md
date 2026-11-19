@@ -112,8 +112,8 @@ An identity discrepancy prevents verification of the intended creative even if o
 
 1. Key capture reuse by original full URL, prepared URL, template policy, settings, and required page state.
 2. Reuse equivalent captures within the same audit only.
-4. Retain every original record, including exact duplicate records.
-6. Validate every record's creative context separately.
+3. Retain every original record, including exact duplicate records.
+4. Validate every record's creative context separately.
 
 # Stage 3 — Capture
 
