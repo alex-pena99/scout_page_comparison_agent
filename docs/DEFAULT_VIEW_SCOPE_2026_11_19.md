@@ -30,3 +30,7 @@ The comparison engine validates structure, citations and counts, but still relie
 ## Verification for this change
 
 Run the Python comparison tests, synthetic reporting/publication fixtures, controlled local Chromium fixtures and syntax checks. Validate compatibility with the selected stored batch without performing the full audit here. Record actual outcomes in the completion handoff; do not infer deployed behavior from local checks.
+
+Verified locally after implementation: **17 Python comparison tests, 5 capture tests (including local Chromium fixtures), and 3 synthetic reporting/publication tests passed**, plus capture/reporting/viewer syntax checks and `git diff --check`. Explicit, guarded-pilot and full-inventory selection checks passed without opening inventory URLs.
+
+The existing local package for `scout-captures-20261119210302267-7bb7bd4` passed current-revision provenance/artifact validation for **135 rows / 236 entries**. The new importer exposed **212 readable baseline states, zero alternate states**, retaining **24 unavailable entries**. This verified compatibility only: no live capture, full comparison, report publication or viewer deployment was performed here. The full-sheet result counts remain pending the sandbox test.
