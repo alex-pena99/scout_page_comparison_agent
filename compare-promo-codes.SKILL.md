@@ -5,6 +5,18 @@ description: Find, associate, and compare advertised promo or redemption codes a
 
 # Compare Promo Codes
 
+## Shared audit execution
+
+**Goal:** Apply this specialist's full rules without repeating the master workflow.
+
+- In a full Scout audit, start with [the master coordinator](coordinate-scout-audit/SKILL.md). Use its validated record context, supplied-template handling, offer map, and shared captures.
+- Use [config/audit-config.json](config/audit-config.json) for the V1 desktop profile, relevant promotional views, four concurrent page captures, one transient retry, one targeted recheck, and provisional timeouts.
+- Supplied evidence satisfies a stage only when its required content, state, settings, and provenance are present. Otherwise return a precise evidence request; do not rerun unrelated intake, navigation, or other guides.
+- Reuse reveals/rechecks that already satisfy the same evidence need. Specialist retry instructions do not create additional independent retry budgets.
+- Return raw results, exact evidence, scope, blockers, and related handoffs to the coordinator. Its report replaces five independent PM-facing reports; its status aggregation does not erase specialist findings.
+- For a standalone check, perform missing shared stages using the same defaults. Open tracking templates as supplied; placeholder presence alone is not a blocker. Never silently substitute click values.
+
+
 ## Objective and boundaries
 Find exact redemption codes, connect them to the correct offers, and report agreement or differences between paired pages.
 

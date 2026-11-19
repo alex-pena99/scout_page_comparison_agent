@@ -16,6 +16,8 @@ The master guide controls:
 5. **Save:** Checkpoint progress and preserve evidence throughout execution.
 6. **Report:** Reconcile every requested record and produce the simple PM report.
 
+The coordinator and specialists share captures and evidence requests. References between guides do not start recursive full audits or grant separate retry budgets.
+
 Specialist guides retain their detailed comparison rules. The master guide defines shared workflow ownership and maps detailed findings into the public results without discarding blockers.
 
 ## Specialist guides
@@ -42,6 +44,30 @@ Columns: **Account, Vanity URL, Tracking URL, Position, Creative Name, Creative 
 - Record the inventory and guide commit used for each audit.
 - Treat this CSV as a versioned snapshot, not a live spreadsheet connection.
 
+## V1 capture defaults
+
+Source: [config/audit-config.json](config/audit-config.json).
+
+- Dedicated desktop Chromium, 1440 x 900, en-US, America/New_York.
+- Equivalent execution region and settings; no ZIP/address submission or nationwide coverage claim.
+- Fresh isolated context per unique entry point; reuse the browser process and equivalent captures.
+- At most four simultaneous page captures, one transient retry, and one targeted recheck per distinct uncertain evidence need.
+- Provisional limits: 30s navigation, 15s readiness, 10s interactions, 180s total per entry including retries and additional states. A timeout leaves coverage incomplete; tune limits from measured pilot results.
+- Inspect the entire rendered page (scrolling as needed), relevant product tabs, offer details, promotional pop-ups/accordions, directly relevant FAQs, and promotional image text. Record unsupported relevant iframe/shadow-root coverage.
+- Mobile/tablet, checkout, forms, unrelated navigation, and legal-policy review are outside V1.
+
+### Supplied tracking templates
+
+Open tracking links as supplied, retaining advertising placeholders and all parameters. Add a missing scheme for navigation and permit normal browser encoding; preserve original, navigation, and final URLs. Do not substitute {lpurl} or fabricate ad-click values. Follow redirects; placeholder presence alone is not an error. Report unusable destinations as Needs Review. These are supplied-template observations, not simulated resolved advertising clicks.
+
+### Pilot versus full audit
+
+- **Full audit:** With no filter, select every record from the inventory at the run's recorded commit.
+- **Development pilot:** Explicitly request the pilot in [config/pilot-config.json](config/pilot-config.json). It selects CSV rows **2, 16, 17, 100, and 111** (header is row 1) from the pinned approved inventory revision. They cover baseline, product views, shared URLs with different creative IDs, differing page experiences, and missing input.
+- Before pilot capture, validate its inventory revision/hash, five-record count, and exact six-column record guards. A selection error aborts the pilot; **never fall back to all 135 records**. The selected rows' existing input issues remain audit findings.
+- Record both the instruction commit and pinned pilot-inventory revision. Never apply pilot row numbers to another inventory. A future inventory update requires explicit pilot revalidation.
+- Known pilot cases are test coverage, not precomputed current website results. No campaign captures have been executed by adding these configs.
+
 ## PM results
 
 | Result | Meaning |
@@ -63,11 +89,11 @@ This repository currently supplies the audit instructions and input inventory. A
 The intended runtime is a dedicated agent environment with Playwright and Chromium, such as Vercel Sandbox. Before a production audit, provide and test:
 - An agent runner that loads the master guide and all five specialist guides.
 - Reusable capture code with readiness checks, equivalent settings, isolated contexts, relevant interactions, and bounded concurrency/retries.
-- An explicit tracking-template policy, including treatment of advertising placeholders and `{lpurl}`.
+- The implemented supplied-template handling and capture defaults specified in config/audit-config.json.
 - Durable job, evidence, and report storage outside the temporary sandbox.
 - A configured audit profile defining device, location, and required content coverage.
 
-If required capabilities or policies are unavailable, report the affected records as Needs Review. Do not claim that captures or audits ran merely because the instructions exist.
+Configuration files define the execution contract; they do not enforce it until implemented by the runner. If required capabilities are unavailable, report the affected records as Needs Review. Do not claim that captures or audits ran merely because the instructions exist.
 
 ## Suggested agent instruction
 

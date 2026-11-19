@@ -9,9 +9,9 @@ description: Serve as Scout's master step-by-step audit guide. Coordinate invent
 
 Start every Scout audit here. Follow the stages below until every requested record has a result.
 
-This guide owns workflow order, shared evidence, handoffs, completion checks, and final public results. The five specialist guides own their detailed extraction and comparison rules. Apply this guide's public aggregation rules while preserving each specialist's raw findings.
+Own workflow, shared evidence, handoffs, completion, and public results. Preserve the five specialists' detailed comparison rules and raw findings.
 
-Do not restart shared stages inside each specialist workflow. Supplied evidence satisfies a specialist stage only when it meets that stage's requirements. Collect missing evidence rather than assuming the stage passed.
+Do not restart shared stages. Reuse evidence only when it meets specialist requirements; otherwise request what is missing.
 
 ## Required repository sources
 
@@ -20,13 +20,15 @@ Resolve these paths relative to the repository root, using one recorded commit:
 | Source | Path |
 | --- | --- |
 | Default inventory | [data/scout-url-inventory.csv](../data/scout-url-inventory.csv) |
+| V1 capture settings | [config/audit-config.json](../config/audit-config.json) |
+| Explicit development pilot | [config/pilot-config.json](../config/pilot-config.json) |
 | Pricing | [pricing-comparison-workflow-guide.md](../pricing-comparison-workflow-guide.md) |
 | Promo codes | [compare-promo-codes.SKILL.md](../compare-promo-codes.SKILL.md) |
 | Benefits and inclusions | [compare-benefits-inclusions.SKILL.md](../compare-benefits-inclusions.SKILL.md) |
 | Dates and durations | [compare-dates-durations.SKILL.md](../compare-dates-durations.SKILL.md) |
 | Advertised requirements | [compare-advertised-requirements.SKILL.md](../compare-advertised-requirements.SKILL.md) |
 
-References are handoffs, not recursive audits. Missing guides and unresolved instruction conflicts require Needs Review. Apply the Pricing Markdown guide despite its different filename; historical notes describe limitations.
+References are handoffs, not recursive audits. Missing guides or unresolved instruction conflicts require Needs Review. Apply Pricing despite its different filename.
 
 ## Boundaries
 
@@ -46,8 +48,8 @@ References are handoffs, not recursive audits. Missing guides and unresolved ins
 2. Apply explicit account, record, or URL filters.
 3. Without a filter, select every inventory record.
 4. Do not substitute a sample or reduce scope silently.
-5. Use a small sample only for an explicitly requested development test.
-6. Use the configured audit profile, including device and location settings.
+5. For an explicit development pilot, validate config/pilot-config.json's pinned inventory/hash and exact five-record guards before capture. Abort on selection failure; never select all records as fallback. Validly selected rows' input issues remain audit findings.
+6. Load config/audit-config.json: desktop Chromium at 1440 x 900, en-US, America/New_York, equivalent execution region, fresh contexts, and no ZIP/address entry. Mobile/tablet are outside V1 scope.
 7. If the request exceeds that profile, perform the additional coverage or report it unresolved; never silently narrow it.
 8. Ask only for essential missing input with no configured default.
 
@@ -55,7 +57,7 @@ References are handoffs, not recursive audits. Missing guides and unresolved ins
 **Goal:** Make the audit reproducible.
 
 1. Resolve one repository commit.
-2. Load this coordinator, the inventory, and all five guides from that commit.
+2. Load this guide, config, inventory, and five specialists from that commit. For the explicit pilot, use its separately pinned inventory and hash; record both revisions.
 3. Record audit ID, commit, start time, inventory source, and capture configuration.
 4. Record external input files separately when supplied.
 5. Do not refresh inventory or instructions midway through the audit.
@@ -94,18 +96,18 @@ For each record:
 5. Compare Creative ID with tracking c=; record missing, ambiguous, or conflicting values.
 6. Never repair tracking IDs or substitute another landing page.
 
-An identity discrepancy prevents verification of the intended creative even if observable content agrees. Available content may still be captured and described, with that limitation retained.
+An identity discrepancy blocks intended-creative verification even if pages agree. Preserve it alongside observable content.
 
-## 2.3 Apply tracking-template policy
-**Goal:** Give prepared capture URLs an explicit, reproducible meaning.
+## 2.3 Open supplied tracking templates
+**Goal:** Test supplied links without inventing advertising inputs.
 
-1. Detect advertising placeholders, including {lpurl}.
-2. Apply only the audit's explicitly configured resolution policy.
-3. Preserve the original template, prepared URL, substitutions, and policy version.
-4. Do not invent ad-click values, remove parameters, or substitute the vanity URL into {lpurl} without a configured rule.
-5. If literal-placeholder testing is explicitly configured, retain those values and label the result a template-based observation.
-6. If policy is missing, block affected tracking captures and continue independent runnable work.
-7. Do not describe template-based testing as a resolved real ad click.
+1. Open tracking URLs as supplied; preserve placeholders and query parameters.
+2. Apply only surrounding-whitespace trimming and a missing navigation scheme. Normal browser URL encoding is permitted; retain the actual navigation and final URLs.
+3. Do not replace {lpurl}, fabricate click values, strip parameters, or repair creative IDs.
+4. Follow normal redirects and inspect the destination. Placeholder presence alone is not an error or blocker.
+5. If a link cannot deliver a usable destination, report Needs Review rather than guessing a replacement.
+6. Label captures as supplied-template observations, not simulations of resolved real advertising clicks.
+7. Apply a different substitution policy only when explicitly authorized and recorded; never change it midway through a run.
 
 ## 2.4 Deduplicate work
 **Goal:** Reduce capture cost without merging record meaning.
@@ -122,10 +124,10 @@ An identity discrepancy prevents verification of the intended creative even if o
 
 Invoke established capture code; do not rewrite navigation/extraction routines for every audit.
 
-1. Process independent captures using the configured concurrency limit.
+1. Allow at most four simultaneous page captures, including retries/rechecks. Keep settings/region equivalent; record location limitations.
 2. Use clean isolated contexts for different entry points and equivalent settings.
 3. Follow normal redirects.
-4. Verify meaningful readiness; network-idle alone is insufficient.
+4. Verify content readiness, not network-idle alone. Provisional limits: navigation 30s, readiness 15s, interaction 10s, total entry 180s including retries/states. Exceeded limits leave coverage incomplete.
 5. Detect error pages and access restrictions.
 6. Record original/prepared/final URLs, title, timestamps, settings, readiness, and attempt history.
 7. Preserve rendered text and section/heading relationships.
@@ -137,7 +139,7 @@ A valid no-price page can be ready; empty arrays, equal counts, or screenshots a
 ## 3.2 Inspect required states
 **Goal:** Avoid missing promotional content behind controls or images.
 
-1. Discover relevant product tabs, offer details, accordions, and FAQs.
+1. Discover and inspect all relevant promotional views on both sides, including Internet/Apple/Android where present, offer details, promotional pop-ups/accordions, and directly relevant FAQs. Scroll the full page for lazy content.
 2. Inspect equivalent states on both pages.
 3. Reuse revealed content across all five checks.
 4. Visually inspect relevant image text when extraction cannot represent it.
@@ -146,12 +148,12 @@ A valid no-price page can be ready; empty arrays, equal counts, or screenshots a
 7. Inspect relevant iframe/shadow-root content when supported; otherwise preserve its coverage gap.
 8. Do not enter checkout or follow unrelated/legal navigation to expand coverage.
 
-A saved screenshot does not establish visual review. A full-page screenshot does not establish coverage of collapsed content.
+Saved screenshots do not prove visual review or coverage of collapsed content.
 
 ## 3.3 Recover from capture failures
 **Goal:** Recover useful evidence without retry loops.
 
-1. Retry an ordinary transient capture failure once.
+1. Within the entry deadline, allow one transient retry and one targeted recheck per distinct evidence need. Share rechecks across skills; never reset budgets or loop.
 2. Preserve failed attempts and unresolved blockers.
 3. Do not bypass certificate warnings, access controls, or bot safeguards.
 4. Continue independent records when one capture fails.
@@ -175,7 +177,7 @@ Do not manufacture missing fields from unrelated experiences. Keep whole-page do
 ## 4.2 Apply all specialist rules
 **Goal:** Complete the requested checks using the same evidence.
 
-Use the guides in the following order for an initial pass. Independent processing is allowed when it preserves the same evidence and scope.
+Apply this initial order; independent processing may reuse identical evidence and scope.
 
 | Check | Apply |
 | --- | --- |
@@ -236,7 +238,7 @@ On resume, restore only compatible completed work from the same audit. Recapture
 
 Apply in order:
 1. **Mismatch:** At least one confirmed difference exists within a valid corresponding comparison scope. Mention additional incomplete checks or input problems in the reason.
-2. **Needs Review:** No qualifying confirmed mismatch establishes the result, but identity conflicts, incorrect comparison, unresolved policy, ambiguity, variable content, missing inputs, incomplete captures, required coverage gaps, or unavailable guides prevent Match.
+2. **Needs Review:** No qualifying confirmed mismatch establishes the result, but identity conflicts, incorrect comparison, ambiguity, variable content, missing inputs, incomplete captures, required coverage gaps, or unavailable guides prevent Match.
 3. **Match:** All required checks completed within declared scope, comparison is valid, and no differences or unresolved blockers remain.
 
 Mapping rules:

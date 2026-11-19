@@ -1,0 +1,98 @@
+{
+  "config_version": 1,
+  "inventory": {
+    "path": "data/scout-url-inventory.csv",
+    "required_columns": [
+      "Account",
+      "Vanity URL",
+      "Tracking URL",
+      "Position",
+      "Creative Name",
+      "Creative ID"
+    ],
+    "default_selection": "all_records",
+    "csv_header_row": 1
+  },
+  "checks": [
+    "pricing",
+    "promo_codes",
+    "benefits_inclusions",
+    "dates_durations",
+    "advertised_requirements"
+  ],
+  "tracking_urls": {
+    "mode": "as_supplied",
+    "preserve_placeholders": true,
+    "substitute_values": false,
+    "remove_query_parameters": false,
+    "preserve_query_order": true,
+    "follow_redirects": true,
+    "missing_scheme": "https",
+    "trim_surrounding_whitespace_for_navigation": true,
+    "unusable_destination_result": "Needs Review",
+    "observation_label": "supplied tracking template; not a simulated resolved ad click"
+  },
+  "capture": {
+    "profile_id": "desktop-v1",
+    "browser": "chromium",
+    "headless": true,
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "locale": "en-US",
+    "timezone_id": "America/New_York",
+    "geolocation": null,
+    "submit_zip_or_address": false,
+    "location_policy": "same execution region for both roles; record observed region when available; no guarantee of nationwide parity",
+    "context_policy": "fresh_isolated_context_per_unique_entry_point",
+    "reuse_browser_process": true,
+    "max_concurrent_page_captures": 4,
+    "timeouts_ms": {
+      "navigation": 30000,
+      "content_readiness": 15000,
+      "interaction": 10000,
+      "capture_entry_total_including_retries": 180000
+    },
+    "timeouts_provisional": true,
+    "transient_capture_retries": 1,
+    "targeted_finding_rechecks": 1,
+    "retry_policy": "retry only ordinary transient failures; rechecks are shared by evidence need; preserve attempts and stop at the total entry deadline",
+    "readiness_policy": "relevant rendered content or explicit valid no-offer state; networkidle or dollar presence alone is insufficient",
+    "surfaces": {
+      "entire_rendered_page": true,
+      "scroll_for_lazy_content": true,
+      "relevant_product_tabs": true,
+      "offer_details": true,
+      "promotional_accordions": true,
+      "promotional_popups": true,
+      "directly_relevant_faqs": true,
+      "relevant_promotional_image_text": true,
+      "relevant_iframes_and_shadow_roots": "inspect when supported; otherwise record a coverage gap",
+      "compare_equivalent_states": true,
+      "separate_hidden_loaded_text": true
+    },
+    "visual_evidence_policy": "save relevant-state screenshots when needed; visually inspect image-based offer text; saved screenshots alone do not establish review",
+    "excluded": [
+      "mobile",
+      "tablet",
+      "zip_or_address_submission",
+      "checkout",
+      "form_submission",
+      "unrelated_navigation",
+      "legal_policy_review"
+    ],
+    "coverage_failure_result": "Needs Review unless another valid confirmed content difference establishes Mismatch"
+  },
+  "results": {
+    "public_statuses": [
+      "Match",
+      "Mismatch",
+      "Needs Review"
+    ],
+    "retain_original_records": true,
+    "preserve_creative_context": true,
+    "checkpoint_after_capture_and_comparison": true,
+    "durable_storage_required": true
+  }
+}

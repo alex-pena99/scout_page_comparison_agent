@@ -1,0 +1,88 @@
+{
+  "config_version": 1,
+  "mode": "development_pilot",
+  "base_config": "config/audit-config.json",
+  "inventory": {
+    "path": "data/scout-url-inventory.csv",
+    "revision": "373fb9daaa92cebaf9318ec90e619a6dbac7f745",
+    "git_blob_sha": "3ce63fd9cb9d0d7f1f4046287ff4902118c06a4d",
+    "sha256_utf8": "224185296c9aa9ddf642eb338fc980bda3aa4eb22302e8c3b30689aa34ae0d81",
+    "csv_header_row": 1
+  },
+  "selection": {
+    "strategy": "explicit_csv_rows_with_exact_record_guards",
+    "expected_count": 5,
+    "records": [
+      {
+        "csv_row": 2,
+        "expected_record": {
+          "Account": "ISC",
+          "Vanity URL": "www.internetservicecompanies.com/",
+          "Tracking URL": "https://tracking.internetservicecompanies.com/?a=144&c=104663&s1={adgroupid}&s2={keyword}.{targetid}&s3={matchtype}.{network}.{creative}&s4={device}&s5={adposition}.{placement}&s6={loc_physical_ms}&ls=g&s20=129692&url={lpurl}",
+          "Position": "",
+          "Creative Name": "Default",
+          "Creative ID": "104663"
+        },
+        "purpose": "Baseline supplied tracking template"
+      },
+      {
+        "csv_row": 16,
+        "expected_record": {
+          "Account": "AT&T",
+          "Vanity URL": "www.att.com/cfd/deals/",
+          "Tracking URL": "https://www.att.com/cfd/tracking/?a=144&c=107795&s1={adgroupid}&s2={keyword}.{targetid}&s3={matchtype}.{network}.{creative}&s4={device}&s5={adposition}.{placement}&s6={loc_physical_ms}&ls=g&s20=105378&s19=EPDxATFIB00C23CFP&url={lpurl}",
+          "Position": "P1",
+          "Creative Name": "Deals",
+          "Creative ID": "107795"
+        },
+        "purpose": "Deals page with relevant product views"
+      },
+      {
+        "csv_row": 17,
+        "expected_record": {
+          "Account": "AT&T",
+          "Vanity URL": "www.att.com/cfd/deals/",
+          "Tracking URL": "https://www.att.com/cfd/tracking/?a=144&c=107795&s1={adgroupid}&s2={keyword}.{targetid}&s3={matchtype}.{network}.{creative}&s4={device}&s5={adposition}.{placement}&s6={loc_physical_ms}&ls=g&s20=105378&s19=EPDxATFIB00C23CFP&url={lpurl}",
+          "Position": "P1",
+          "Creative Name": "Internet - Managed",
+          "Creative ID": "107800"
+        },
+        "purpose": "Same URL pair with different creative identity"
+      },
+      {
+        "csv_row": 100,
+        "expected_record": {
+          "Account": "Optimum",
+          "Vanity URL": "https://www.optimum.com/cf/",
+          "Tracking URL": "https://www.optimum.com/cf/tracking/?a=144&c=113651&s1={adgroupid}&s2={keyword}.{targetid}&s4={device}&s5={adposition}.{placement}&s6={loc_physical_ms}&ls=g&s20=113541&url={lpurl}",
+          "Position": "P1",
+          "Creative Name": "Internet",
+          "Creative ID": "112381"
+        },
+        "purpose": "Different sales/support experience and creative discrepancy"
+      },
+      {
+        "csv_row": 111,
+        "expected_record": {
+          "Account": "optimum",
+          "Vanity URL": "",
+          "Tracking URL": "https://www.optimum.com/cf/tracking/?a=144&c=114830&s1={adgroupid}&s2={keyword}.{targetid}&s4={device}&s5={adposition}.{placement}&s6={loc_physical_ms}&ls=g&s20=124069&url={lpurl}",
+          "Position": "p1",
+          "Creative Name": "1mf",
+          "Creative ID": "114830"
+        },
+        "purpose": "Missing vanity input"
+      }
+    ]
+  },
+  "on_invalid_selection": "abort_pilot_before_capture",
+  "fallback_to_full_inventory": false,
+  "execution_rules": [
+    "Resolve the pilot config and all six guides from one recorded instruction commit.",
+    "Read the inventory only from its separately pinned revision and verify its byte hash and exact selected records.",
+    "Do not apply this pinned pilot to an external or modified inventory.",
+    "If a count, row, guard, revision, or hash check fails, stop before capture and report the selection error.",
+    "Validation problems inside correctly selected records are intended audit inputs, not pilot-selection errors."
+  ],
+  "note": "Configured development sample, not a completed audit. Known input cases do not predetermine current page-content findings."
+}
