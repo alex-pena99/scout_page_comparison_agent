@@ -1,5 +1,7 @@
 # Standalone page capture
 
+Latest targeted verification: [headline-view refresh for rows 16 and 20](CAPTURE_HEADLINE_VIEWS_2026_11_19.md).
+
 Captures only: no comparison, verdicts, report publication, or viewer deployment.
 The inventory is the committed CSV, defaulting to all records. Exact duplicate
 entry URLs share evidence while every CSV row keeps its original mapping.
