@@ -1,5 +1,5 @@
 {
-  "config_version": 2,
+  "config_version": 3,
   "inventory": {
     "path": "data/scout-url-inventory.csv",
     "required_columns": [
@@ -32,7 +32,7 @@
     "observation_label": "supplied tracking template; not a simulated resolved ad click"
   },
   "capture": {
-    "profile_id": "desktop-v1",
+    "profile_id": "desktop-pricing-offers-v3",
     "browser": "chromium",
     "headless": true,
     "viewport": {
@@ -67,7 +67,7 @@
       "promotional_popups": true,
       "directly_relevant_faqs": true,
       "relevant_promotional_image_text": true,
-      "relevant_iframes_and_shadow_roots": "inspect when supported; otherwise record a coverage gap",
+      "relevant_iframes_and_shadow_roots": "target only in-scope offer evidence; block only a necessary unresolved comparison",
       "compare_equivalent_states": true,
       "separate_hidden_loaded_text": true
     },
@@ -79,9 +79,37 @@
       "checkout",
       "form_submission",
       "unrelated_navigation",
-      "legal_policy_review"
+      "legal_policy_review",
+      "legal_and_disclosure_perfection",
+      "commercial_correctness",
+      "internal_consistency_investigations",
+      "autopay_enrollment_activation_and_start_windows",
+      "first_credit_processing",
+      "proof_and_document_submission_procedures",
+      "administrative_redemption_deadlines",
+      "delivery_and_fulfillment_estimates",
+      "dormant_hidden_content_as_active_offers",
+      "nonmaterial_wording_and_layout"
     ],
-    "coverage_failure_result": "Needs Review unless another valid confirmed content difference establishes Mismatch"
+    "coverage_failure_result": "Needs Review only for necessary unresolved pricing/offer evidence; optional/excluded/redundant failures are notes. Confirmed in-scope differences still establish Mismatch.",
+    "interaction_policy": "Read rendered offers first. Open details only for missing in-scope facts or context suggesting additional distinct offers; reuse sufficient equivalent evidence. No exhaustive disclosure/provider-panel/FAQ checklist.",
+    "surface_flags_meaning": "Eligibility for targeted inspection, not a requirement to open every matching control.",
+    "gap_assessment": {
+      "required_fields": [
+        "section_or_action",
+        "affected_offer_or_plausibly_distinct_offer",
+        "missing_in_scope_evidence",
+        "why_existing_evidence_is_insufficient",
+        "affected_checks_and_records"
+      ],
+      "nonblocking": [
+        "excluded_or_unrelated_content",
+        "redundant_detail_with_sufficient_equivalent_evidence"
+      ],
+      "uncertain_relevance": "blocking only when visible context supports possible additional uncaptured in-scope offers; do not assume redundancy",
+      "timeout_alone_is_blocking": false,
+      "do_not_assume_unread_content_irrelevant": true
+    }
   },
   "results": {
     "public_statuses": [
@@ -92,12 +120,44 @@
     "retain_original_records": true,
     "preserve_creative_context": true,
     "checkpoint_after_capture_and_comparison": true,
-    "durable_storage_required": true
+    "durable_storage_required": true,
+    "blocking_scope": "necessary_in_scope_pricing_and_offer_comparison_only",
+    "nonblocking_notes_separate": true,
+    "raw_specialist_warning_requires_relevance_assessment": true
   },
   "comparison": {
-    "basis": "delivered_page_content",
+    "basis": "advertised_pricing_and_offer_parity",
     "creative_name_role": "supporting_context_only",
     "tracking_parameters": "preserve_unchanged_do_not_validate_against_inventory",
-    "legacy_extra_columns": "ignore_unneeded_metadata"
+    "legacy_extra_columns": "ignore_unneeded_metadata",
+    "scope_version": "pricing-offers-v3",
+    "included": [
+      "advertised_dollar_values_and_billing_basis",
+      "promo_codes",
+      "benefits_and_inclusions",
+      "offer_dates_and_promotional_periods",
+      "material_advertised_qualifications"
+    ],
+    "excluded": [
+      "legal_and_disclosure_perfection",
+      "commercial_correctness",
+      "internal_consistency_investigations",
+      "autopay_enrollment_activation_and_start_windows",
+      "first_credit_processing",
+      "proof_and_document_submission_procedures",
+      "administrative_redemption_deadlines",
+      "delivery_and_fulfillment_estimates",
+      "dormant_hidden_content_as_active_offers",
+      "nonmaterial_wording_and_layout"
+    ],
+    "material_conditions_examples": [
+      "AutoPay or paperless required for an advertised price",
+      "required bundle",
+      "eligible trade-in",
+      "plan or line-count minimum",
+      "new-customer eligibility"
+    ],
+    "identical_internal_contradictions": "nonblocking_optional_note_when_corresponding_advertised_content_agrees",
+    "autopay_start_window_differences": "excluded_no_result_impact"
   }
 }

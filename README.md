@@ -1,108 +1,71 @@
-# Scout
+# Scout — Pricing and Offers
 
-Scout compares Centerfield vanity and tracking URL pairs for pricing and advertised offer content. The PM asks for an audit and receives a simple list: **Match**, **Mismatch**, or **Needs Review**, with a short reason.
+Scout compares the advertised pricing and offers on vanity and tracking pages. The PM asks for an audit and receives **Match**, **Mismatch**, or **Needs Review**, with a short reason.
 
-## Start here: master audit guide
+## Start here
 
-**Every audit starts with [coordinate-scout-audit/SKILL.md](coordinate-scout-audit/SKILL.md).**
+**Every audit starts with [coordinate-scout-audit/SKILL.md](coordinate-scout-audit/SKILL.md).** It is the master protocol: Start → Prepare → Capture → Compare → Save and decide → Report.
 
-This is Scout's master step-by-step protocol. It coordinates the five specialist guides; it is not a sixth independent content check. Do not run the specialists as five separate browsing workflows.
-
-The master guide controls:
-1. **Start:** Establish scope, load a consistent repository revision, and verify capture capability.
-2. **Validate:** Preserve records, check URL inputs, apply configured template rules, and plan capture reuse.
-3. **Capture:** Collect shared page evidence and relevant promotional states.
-4. **Compare:** Align offers, apply all five guides, coordinate handoffs, and recheck uncertainty.
-5. **Save:** Checkpoint progress and preserve evidence throughout execution.
-6. **Report:** Reconcile every requested record and produce the simple PM report.
-
-The coordinator and specialists share captures and evidence requests. References between guides do not start recursive full audits or grant separate retry budgets.
-
-Specialist guides retain their detailed comparison rules. The master guide defines shared workflow ownership and maps detailed findings into the public results without discarding blockers.
-
-## Specialist guides
+Read the master, [capture configuration](config/audit-config.json), and the five specialists from the run's recorded commit. Share captures and offer associations; do not launch five independent browsing workflows.
 
 | Check | Guide |
 | --- | --- |
 | Pricing | [pricing-comparison-workflow-guide.md](pricing-comparison-workflow-guide.md) |
 | Promo codes | [compare-promo-codes.SKILL.md](compare-promo-codes.SKILL.md) |
-| Benefits and inclusions | [compare-benefits-inclusions.SKILL.md](compare-benefits-inclusions.SKILL.md) |
-| Dates and durations | [compare-dates-durations.SKILL.md](compare-dates-durations.SKILL.md) |
-| Advertised requirements | [compare-advertised-requirements.SKILL.md](compare-advertised-requirements.SKILL.md) |
+| Benefits | [compare-benefits-inclusions.SKILL.md](compare-benefits-inclusions.SKILL.md) |
+| Dates | [compare-dates-durations.SKILL.md](compare-dates-durations.SKILL.md) |
+| Material requirements | [compare-advertised-requirements.SKILL.md](compare-advertised-requirements.SKILL.md) |
 
-Pricing includes every literal dollar-sign occurrence within the declared capture coverage. Other checks preserve their offer context. Legal terms review and checkout/redemption testing are outside scope.
+## What matters
 
-## Audit inventory
+Compare advertised dollar values, fees, savings, rewards, promo codes, included benefits, offer dates/promotional periods, and qualifications that materially change the deal. Preserve relevant billing units, "up to," bundles, AutoPay/paperless price conditions, eligible plans, and trade-ins.
 
-Default source: [data/scout-url-inventory.csv](data/scout-url-inventory.csv).
+This is **cross-page parity**, not a legal audit or certification of commercial correctness. Exclude disclosure wording/completeness, internal-consistency investigations, AutoPay enrollment/activation/start windows, first-credit processing, document/submission procedures, administrative redemption deadlines, and delivery estimates.
 
-Columns: **Account, Vanity URL, Tracking URL, Position, Creative Name**.
+- $35 versus $45, a $100 versus $200 reward, or a genuinely one-sided benefit: **Mismatch**.
+- Same conflicting disclosure passages on both pages: no parity blocker; optional note only.
+- Discount starts within 2 versus 3 bills: excluded mechanics; no result impact.
+- One offer requires AutoPay/bundling for the price and its counterpart does not: compare the material qualification.
+- Formatting, layout, and equivalent paraphrases are not changed deals.
 
-- Preserve every source record and its creative context.
-- Reuse equivalent captures while validating each record separately.
-- Preserve every tracking parameter, including c=; never change the delivered routing to make pages agree.
-- Record the inventory and guide commit used for each audit.
-- Treat this CSV as a versioned snapshot, not a live spreadsheet connection.
+## Capture only what the comparison needs
 
-## Content-only comparison
+Read the rendered page and distinct offer-bearing views, scrolling as needed. Open details, panels, FAQs, or frames when their context suggests additional offers or they are needed to understand a material price/offer fact. Reuse sufficient equivalent evidence instead of requiring every redundant panel to open.
 
-Scout does not require or validate Creative ID. Ignore it in legacy inputs; do not generate campaign-ID mismatch or missing-ID findings. The inventory has five columns and keeps every original record. Creative Name provides context only: labels alone cannot trigger Needs Review or override matching delivered content.
+A timeout alone is not a reason for Needs Review. Classify it:
+- Excluded or redundant content with sufficient captured offer evidence: nonblocking technical note.
+- Necessary offer evidence or a plausibly distinct offer remains unavailable: a specific blocking gap.
 
-Compare actual offers on the supplied pages. Preserve complete tracking URLs, including c=, because parameters may determine what loads. Input failures, unrelated page experiences, ambiguity, and capture/coverage problems still require review. Read historical results as old audit records; rerun with the new instructions to obtain content-only results.
+Do not dismiss unread content merely because capture failed. Name the section, why it matters, and the evidence still missing. Apply gaps only to dependent records/checks.
 
-This repository contains no capture runner or result-aggregation implementation. Any external deployed runner must also remove ID-based gates and load this updated inventory/configuration; changing these files does not retroactively change saved reports.
+Desktop defaults remain Chromium at 1440 x 900, en-US, America/New_York, equivalent region/settings, isolated contexts, and four concurrent captures. Allow one transient retry and one shared targeted recheck per distinct need. Provisional limits remain 30s navigation, 15s readiness, 10s interaction, and 180s total per entry. Mobile/tablet, ZIP/address entry, checkout, forms, and unrelated navigation remain outside V1. A timeout affects the result only after relevance assessment.
 
-## V1 capture defaults
+## Inputs and pilot
 
-Source: [config/audit-config.json](config/audit-config.json).
+Use [data/scout-url-inventory.csv](data/scout-url-inventory.csv): **Account, Vanity URL, Tracking URL, Position, Creative Name**. Preserve all records. Ignore Creative ID in legacy inputs. Creative Name is supporting context, never a campaign-validation gate.
 
-- Dedicated desktop Chromium, 1440 x 900, en-US, America/New_York.
-- Equivalent execution region and settings; no ZIP/address submission or nationwide coverage claim.
-- Fresh isolated context per unique entry point; reuse the browser process and equivalent captures.
-- At most four simultaneous page captures, one transient retry, and one targeted recheck per distinct uncertain evidence need.
-- Provisional limits: 30s navigation, 15s readiness, 10s interactions, 180s total per entry including retries and additional states. A timeout leaves coverage incomplete; tune limits from measured pilot results.
-- Inspect the entire rendered page (scrolling as needed), relevant product tabs, offer details, promotional pop-ups/accordions, directly relevant FAQs, and promotional image text. Record unsupported relevant iframe/shadow-root coverage.
-- Mobile/tablet, checkout, forms, unrelated navigation, and legal-policy review are outside V1.
+Keep tracking URLs and every parameter, including c=, unchanged. For navigation, trim surrounding whitespace, add a missing https:// scheme, permit browser encoding, and follow redirects. Preserve placeholders; do not invent click values or substitute {lpurl}. A placeholder is not an error. These captures observe supplied templates, not simulated resolved ad clicks.
 
-### Supplied tracking templates
+- **Full audit:** No filter means every inventory record at the run's recorded revision.
+- **Explicit development pilot:** [config/pilot-config.json](config/pilot-config.json) selects rows 2, 16, 17, 100, and 111 (header is row 1) from its pinned inventory. Verify the hash and exact five-column guards. Abort invalid selection before capture; never fall back to all 135 records.
+- Record both instruction and pilot-inventory revisions. CSV and pilot selection are unchanged by this scope revision.
 
-Open tracking links as supplied, retaining advertising placeholders and all parameters. Add a missing scheme for navigation and permit normal browser encoding; preserve original, navigation, and final URLs. Do not substitute {lpurl} or fabricate ad-click values. Follow redirects; placeholder presence alone is not an error. Report unusable destinations as Needs Review. These are supplied-template observations, not simulated resolved advertising clicks.
-
-### Pilot versus full audit
-
-- **Full audit:** With no filter, select every record from the inventory at the run's recorded commit.
-- **Development pilot:** Explicitly request the pilot in [config/pilot-config.json](config/pilot-config.json). It selects CSV rows **2, 16, 17, 100, and 111** (header is row 1) from the pinned approved inventory revision. They cover baseline, product views, shared URLs with different descriptive labels, differing page experiences, and missing input.
-- Before pilot capture, validate its inventory revision/hash, five-record count, and exact five-column record guards. A selection error aborts the pilot; **never fall back to all 135 records**. The selected rows' existing input issues remain audit findings.
-- Record both the instruction commit and pinned pilot-inventory revision. Never apply pilot row numbers to another inventory. A future inventory update requires explicit pilot revalidation.
-- Known pilot cases are test coverage, not precomputed current website results. No campaign captures have been executed by adding these configs.
-
-## PM results
+## PM report
 
 | Result | Meaning |
 | --- | --- |
-| Match | All required checks completed within scope, comparison is valid, and no differences or unresolved blockers remain. |
-| Mismatch | A confirmed difference exists within a valid comparison scope. Mention additional incomplete checks in the reason. |
-| Needs Review | Input, offer alignment, capture, ambiguity, or coverage prevents a supported Match and no qualifying confirmed mismatch establishes the result. |
+| Match | In-scope advertised pricing and offers agree with sufficient evidence and no necessary unresolved comparison. |
+| Mismatch | At least one confirmed in-scope difference; mention other necessary gaps if present. |
+| Needs Review | Inputs, unrelated destinations, offer association, or necessary missing evidence prevent comparison and no confirmed mismatch establishes the result. |
 
-Return a count of results and a simple table:
+Return counts and **Row | Account | Creative | Vanity URL | Tracking URL | Result | Reason**. Explain what already agrees and precisely what remains unverified. Keep optional notes and raw evidence available for follow-up. Match is limited to this desktop advertised-pricing/offer scope, not every page detail.
 
-**Row | Account | Creative | Vanity URL | Tracking URL | Result | Reason**
+## Runtime integration
 
-Keep detailed findings and evidence available for follow-up. Account for every requested record, including failures and duplicate mappings.
+This repository supplies instructions, configuration, and inventory, not a capture runner. External runners/report aggregators must implement config version 3: classify relevance before converting capture warnings or specialist statuses into a public result. Do not automatically carry forward old blanket timeout/internal-contradiction blockers. Reports already saved are historical; rerun using the updated instructions to reassess them.
 
-## Runtime integration status
-
-This repository currently supplies the audit instructions and input inventory. Adding these files does not deploy a working capture service or install skills into ChatGPT automatically.
-
-The intended runtime is a dedicated agent environment with Playwright and Chromium, such as Vercel Sandbox. Before a production audit, provide and test:
-- An agent runner that loads the master guide and all five specialist guides.
-- Reusable capture code with readiness checks, equivalent settings, isolated contexts, relevant interactions, and bounded concurrency/retries.
-- The implemented supplied-template handling and capture defaults specified in config/audit-config.json.
-- Durable job, evidence, and report storage outside the temporary sandbox.
-- A configured audit profile defining device, location, and required content coverage.
-
-Configuration files define the execution contract; they do not enforce it until implemented by the runner. If required capabilities are unavailable, report the affected records as Needs Review. Do not claim that captures or audits ran merely because the instructions exist.
+The intended dedicated runtime uses Playwright/Chromium, such as in Vercel Sandbox, plus durable progress/evidence storage. Configuration does not enforce behavior until the runner uses it. No campaign audit was executed by editing these files.
 
 ## Suggested agent instruction
 
-> Start every Scout audit with coordinate-scout-audit/SKILL.md. Read the inventory and all five specialist guides from the same recorded repository commit. Follow the master protocol, reuse capture evidence, preserve each record's creative context, and return every requested record as Match, Mismatch, or Needs Review with a short reason.
+> Start with coordinate-scout-audit/SKILL.md. Compare advertised pricing and offers using the shared captures and five focused guides. Exclude disclosure perfection and enrollment mechanics. Return every requested record as Match, Mismatch, or Needs Review; only necessary unresolved offer evidence can block agreement.
