@@ -4,11 +4,15 @@ Captures only: no comparison, verdicts, report publication, or viewer deployment
 The inventory is the committed CSV, defaulting to all records. Exact duplicate
 entry URLs share evidence while every CSV row keeps its original mapping.
 
+## Comparison boundary
+
+Normal Scout audits select a saved batch and read its evidence; they do not launch this pipeline or browse live pages. See [run.md](run.md) and [the coordinator](../coordinate-scout-audit/SKILL.md) for row mappings, age/coverage validation, refresh requests, and the implemented saved-batch importer/report commands. Playwright is used by standalone CLI code, not exposed here as an MCP tool or callable agent. A refresh is a separate authorized operation.
+
 ## Resources
 
 `config/capture-store.json` names the dedicated private captures store, project,
 region, and sandbox. Report storage and its credentials remain separate.
-No schedule is enabled. Run the same command from an authorized scheduler later.
+No schedule is enabled. A future scheduler would need an approved cadence and authorized runtime identity; none is created by these instructions.
 
 Install Node 24, Python 3, Git, and the official `sandbox` CLI (tested 4.12.0).
 Run `npm ci --prefix capture`. Authenticate the CLI to Centerfield. The named
@@ -68,7 +72,9 @@ OIDC connection rather than attempting to bypass that protection.
 node capture/storage.mjs smoke unique-connection-check-id
 node capture/storage.mjs publish RUN_DIRECTORY/capture-package
 node capture/storage.mjs list
-node capture/storage.mjs get BATCH_ID NEW_PRIVATE_DIRECTORY entry-001
+node capture/storage.mjs get BATCH_ID NEW_PRIVATE_DIRECTORY
+# Optional selected rows (includes the pinned inventory):
+node capture/storage.mjs get BATCH_ID ANOTHER_NEW_PRIVATE_DIRECTORY --rows 2,3
 ```
 
 For example, publish an already captured package without creating an env file:

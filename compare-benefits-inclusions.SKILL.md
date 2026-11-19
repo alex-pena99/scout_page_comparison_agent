@@ -8,7 +8,7 @@ description: Compare only headline savings, rewards, discounts, devices, include
 ## Shared scope
 **Goal:** Compare headline facts only.
 
-Use [the master](coordinate-scout-audit/SKILL.md), [config](config/audit-config.json), and shared headline captures/offer map. For standalone use, collect only the same primary headline/card evidence and relevant product tabs. Report scope/title: **Headline pricing and offer comparison**.
+Use [the master](coordinate-scout-audit/SKILL.md), [config](config/audit-config.json), and the selected validated saved batch/offer map. Read already captured primary headline/card and product-tab states; normal audits do not browse, click, or start Playwright. A recheck means inspecting saved evidence in that batch. Request a separate refresh for missing necessary headline states; never silently substitute older evidence. Report capture age/gaps through the master. Report scope/title: **Headline pricing and offer comparison**.
 
 Do not check eligibility, supporting requirements, disclosures, legal wording, redemption procedures, or administrative terms, including when excluded clauses appear inline. Never open terms, FAQs, or disclosure modals. Failed or missing supporting details are nonblocking. Never assume unreadable headline content matches. Preserve supplied URLs and capture security; ignore Creative ID and use Creative Name as context only.
 

@@ -295,5 +295,67 @@
   },
   "disabled_checks": {
     "advertised_requirements": "out_of_scope; skip as internal NOT_APPLICABLE, never a missing check or public blocker"
+  },
+  "workflow": {
+    "comparison_mode": "selected_saved_capture_batch",
+    "normal_audit_live_browsing": false,
+    "capture_responsibility": "standalone_Playwright_Chromium_CLI_pipeline",
+    "capture_interface": "host CLI documented in docs/capture-pipeline.md; no implemented MCP/callable agent endpoint",
+    "batch_selection": {
+      "default_batch_id": null,
+      "require_recorded_selection": true,
+      "latest_means_latest_compatible_manifest_not_latest_object_name": true,
+      "validate": [
+        "batch_id_kind_schema_and_completed_manifest",
+        "private_retrieval_checksums_and_sizes",
+        "inventory_revision_hash_and_exact_requested_row_URL_mappings",
+        "vanity_tracking_entry_keys",
+        "region_profile_and_required_saved_headline_states",
+        "actual_capture_timestamps_and_failures"
+      ],
+      "single_batch_by_default": true,
+      "allow_silent_older_fallback": false,
+      "allow_silent_cross_batch_fill": false,
+      "mixed_batch_import_supported": false
+    },
+    "freshness": {
+      "max_capture_age_seconds": null,
+      "policy": "report actual evidence age; apply an explicit user/approved maximum when provided; never claim saved evidence is live",
+      "timestamp_source": "used state capturedAt; label entry timestamp fallback; createdAt is package time",
+      "unknown_age": "report unknown and request refresh if freshness cannot satisfy the audit request",
+      "report": [
+        "batch_id",
+        "capture_window",
+        "comparison_time",
+        "per_side_capture_age",
+        "profile",
+        "coverage_gaps"
+      ]
+    },
+    "refresh": {
+      "mode": "explicit_request_to_authorized_pipeline_operator",
+      "normal_audit_starts_capture": false,
+      "automatic_submission_implemented": false,
+      "request_fields": [
+        "batch_id",
+        "source_rows",
+        "original_URLs_and_roles",
+        "required_headline_state_or_field",
+        "reason",
+        "freshness_requirement_if_any"
+      ],
+      "replacement": "explicit selection and revalidation; preserve earlier evidence"
+    },
+    "integration_status": {
+      "private_batch_capture_publish_list_get": "implemented",
+      "manual_saved_evidence_review": "documented comparison workflow",
+      "recurring_capture_schedule": "not enabled",
+      "comparison_triggered_refresh": "not implemented",
+      "retention_deletion_schedule": "not enabled",
+      "saved_batch_import": "implemented by comparison/saved_captures.py; one verified batch per audit",
+      "report_batch_provenance_and_capture_windows": "implemented; relative age and freshness assessment recorded by Scout in the delivered summary",
+      "automatic_maximum_age_enforcement": "not implemented; review applies an explicit user/approved limit"
+    },
+    "scope": "Existing comparison/checks/results rules remain unchanged. Workflow metadata documents the protocol; it does not implement freshness gates, scheduling or refresh submission."
   }
 }

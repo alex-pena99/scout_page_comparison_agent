@@ -4,16 +4,16 @@ Scout audits saved evidence from the separate [capture pipeline](capture-pipelin
 
 ## Select and verify a saved batch
 
-Use an explicit batch ID. Check that its age and capture window fit the audit. A recent sample does not cover the full inventory. The first full batch and its timestamp are documented in the [capture handoff](CAPTURE_HANDOFF_2026_11_19.md).
+Use an explicit batch ID. Report the capture window, comparison time, and age of each state used (entry timestamps only as a labeled fallback). Manifest createdAt is package time. No universal age limit is configured and the importer has no maximum-age option: Scout applies any user/approved limit during review, requests a separate refresh when needed, and never calls saved evidence a live check. Unknown age is not fresh evidence. A recent sample does not cover the full inventory. The first full batch and its timestamp are documented in the [capture handoff](CAPTURE_HANDOFF_2026_11_19.md).
 
-Set `SCOUT_RUN` to a new private run directory outside Git and `SCOUT_BATCH` to the approved batch ID. Here is the initial full batch path with a five-row smoke selection:
+Set `SCOUT_RUN` to a new private run directory outside Git and `SCOUT_BATCH` to the approved batch ID. The example uses an explicitly selected batch and five CSV rows; set APPROVED_BATCH_ID to the chosen compatible batch, not automatically to the historical example:
 
 ```sh
 npm ci --prefix capture
 npm ci --prefix reporting
 npm ci --prefix web
 
-SCOUT_BATCH=scout-captures-20261119210302267-7bb7bd4
+SCOUT_BATCH=APPROVED_BATCH_ID
 SCOUT_ROWS=2,16,20,77,111
 umask 077
 mkdir "$SCOUT_RUN"
@@ -22,7 +22,7 @@ vercel env run --environment development --project prj_XifLZUl5IZ7GE3UZ0krk4tXOD
 python3 comparison/saved_captures.py "$SCOUT_RUN" --batch "$SCOUT_BATCH" --rows "$SCOUT_ROWS"
 ```
 
-For a full audit, omit `--rows "$SCOUT_ROWS"` from both commands. Retrieval uses the dedicated capture store and verifies each selected artifact checksum. Preparation always validates the full batch mapping against the committed CSV, even when reviewing only a subset. It rejects a small batch for a full audit. It also verifies the runner hash and capture profile and prints the capture start and finish in UTC. For each entry, the downloaded `evidence/entries/` directory has the capture record, state JSON, rendered text and available screenshots. Keep this directory private.
+For a full audit, omit `--rows "$SCOUT_ROWS"` from both commands. Retrieval uses the dedicated capture store and verifies each selected artifact checksum. Preparation always validates the full batch mapping against the committed CSV, even when reviewing only a subset. It rejects a small batch for a full audit. It also verifies the runner hash and capture settings/profile and prints the batch capture window in UTC. Capture provenance remains separate from the current comparison instructions. Validation failures must stop preparation; do not fabricate checkpoints, silently select older evidence, or merge different batches. For each entry, the downloaded `evidence/entries/` directory has the capture record, state JSON, rendered text and available screenshots. Keep this directory private.
 
 Capture credentials are used only by the host process. Use the existing Development OIDC connection, or the approved capture-store credential names in [capture-pipeline.md](capture-pipeline.md). Report publication uses its separate environment. Browser capture, viewer deployment, and schedules are separate operations.
 
@@ -66,11 +66,11 @@ python3 reporting/build.py "$SCOUT_RUN"
 node reporting/verify.mjs "$SCOUT_RUN/published"
 ```
 
-The builder rechecks the comparison against the evidence, packages a new report, and includes selected rows, capture metadata, screenshots and raw evidence archives. The verifier renders it with the actual viewer code and checks each row, status, count and evidence filename/checksum. Spot-check headline facts against the referenced screenshots and captures before approving publication. Keep those notes private. Record agent planning/review, transfers, assembly and final verification as separate intervals in the private run log when measured. Capture wall time is first capture-task start through last task finish, including gaps; active time is the union of task intervals. End-to-end starts when the audit is accepted and ends after report verification. Mark unmeasured intervals as unknown.
+The builder rechecks the comparison against the evidence, packages a new report, and includes selected rows, captureSource provenance, batch and entry capture windows, timestamped screenshots and raw evidence archives. Include relative per-side age, profile, and freshness assessment in Scout’s delivered summary/private review log; these are not automatic freshness enforcement or relative-age viewer fields. The verifier renders it with the actual viewer code and checks each row, status, count and evidence filename/checksum. Spot-check headline facts against the referenced screenshots and captures before approving publication. Keep those notes private. Record agent planning/review, transfers, assembly and final verification as separate intervals in the private run log when measured. Capture wall time is first capture-task start through last task finish, including gaps; active time is the union of task intervals. End-to-end starts when the audit is accepted and ends after report verification. Mark unmeasured intervals as unknown.
 
 ## Hand off refresh requests
 
-Use the report’s **Capture refresh handoff** document or `refresh_requests` in the comparison checkpoint. Each item specifies the saved batch, original entry URL, affected rows and roles, required primary view, and the evidence gap. Give these items to the authorized operator of the separate capture pipeline. The handoff is a local record and does not contact or trigger a service. Fix missing URLs or persistent certificate and routing errors at the source before requesting a refresh. Use the standalone pilot command with an explicit row selection and a reviewed adapter if necessary. Select the resulting new batch explicitly and issue a new audit. Keep the original evidence batch and audit intact.
+For coverage gaps, use the report’s **Capture refresh handoff** document or `refresh_requests` in the comparison checkpoint. The document identifies the saved batch; each item identifies an entry, its navigation URL, affected rows and roles, required primary view, and gap reason. Add the original supplied URL and freshness requirement from the verified mapping when handing it off. Freshness-only requests are recorded manually; the CLI generates requests for coverage/access gaps, not age violations. Give these items to the authorized operator of the separate capture pipeline. The handoff is a local record and does not contact or trigger a service. Report missing URLs or persistent certificate/routing errors to the source owner; do not repair supplied inputs or bypass TLS during comparison. The authorized operator uses the standalone capture CLI with an explicit row selection and a reviewed action plan/adapter if necessary. Select the resulting new batch explicitly and issue a new audit. Keep the original evidence batch and audit intact.
 
 ## Publish a new private report
 
