@@ -1,5 +1,5 @@
 {
-  "config_version": 3,
+  "config_version": 4,
   "inventory": {
     "path": "data/scout-url-inventory.csv",
     "required_columns": [
@@ -109,6 +109,114 @@
       "uncertain_relevance": "blocking only when visible context supports possible additional uncaptured in-scope offers; do not assume redundancy",
       "timeout_alone_is_blocking": false,
       "do_not_assume_unread_content_irrelevant": true
+    },
+    "execution_reference": "references/capture-execution.md",
+    "execution": {
+      "scheduling": {
+        "mode": "continuously_filled_queue",
+        "limit_source": "capture.max_concurrent_page_captures",
+        "fixed_batch_barriers": false,
+        "whole_pass_barriers": "only for genuine evidence dependencies; otherwise enqueue ready work",
+        "count_retries_and_rechecks_against_limit": true
+      },
+      "sessions": {
+        "reuse_within_same_entry_when_practical": true,
+        "max_live_pages_and_contexts": 4,
+        "isolate_different_entry_urls": true,
+        "idle_retention": "bounded by available page slots and the existing cumulative entry budget; release if retaining would block ready work",
+        "on_reopen": "restore only necessary prerequisites; capture missing offer state; repeat baseline only when invalidated"
+      },
+      "baseline": {
+        "capture_once_per_entry_when_valid": true,
+        "avoid_repeated_full_scroll_and_full_page_screenshot": true,
+        "revalidate_after_material_page_change": true
+      },
+      "actions": {
+        "disabled_control": "skip action in current observed state; still assess required offer coverage",
+        "preflight": [
+          "visible",
+          "enabled",
+          "not_obscured"
+        ],
+        "unchanged_failed_action": "do_not_repeat",
+        "obstruction_recovery": "identify obstruction, dismiss if appropriate, verify state changed; remain within existing shared retry/recheck budgets",
+        "modal_close_requires_verification": true,
+        "force_click_obstructions": false,
+        "order": "required product/device selection before dependent disclosures",
+        "completion": "explicit expected state, including selected control and associated offer content where applicable",
+        "completion_timeout_source": "capture.timeouts_ms.interaction",
+        "fixed_post_click_sleep_ms": 0,
+        "carousel_stop": "required offers already captured, disabled control, repeated state, or no new offers"
+      },
+      "scrolling": {
+        "record_reached_bottom": true,
+        "record_in_scope_offer_coverage_separately": true,
+        "missing_bottom_confirmation": "not an automatic blocker; assess whether relevant lazy offer content is missing",
+        "full_page_screenshot_alone_proves_lazy_content": false
+      },
+      "telemetry": {
+        "clock": "monotonic elapsed durations plus UTC event timestamps",
+        "record": [
+          "queue_wait",
+          "context_setup",
+          "navigation",
+          "readiness",
+          "scrolling",
+          "extraction",
+          "action_preflight",
+          "click",
+          "state_verification",
+          "modal_recovery",
+          "screenshots",
+          "artifact_writes",
+          "context_teardown",
+          "agent_planning_and_review",
+          "evidence_transfer",
+          "report_assembly",
+          "publication",
+          "verification"
+        ],
+        "counters": [
+          "visits_per_entry",
+          "baseline_captures",
+          "actions_attempted",
+          "actions_disabled_skipped",
+          "actions_obstructed",
+          "actions_timed_out",
+          "actions_repeated_without_state_change",
+          "followup_reopens",
+          "required_offer_states_completed",
+          "necessary_evidence_gaps"
+        ],
+        "record_actual_active_worker_intervals": true,
+        "do_not_sum_parallel_durations_as_wall_time": true
+      },
+      "provenance": {
+        "required": [
+          "instruction_commit",
+          "runner_revision_or_content_hash",
+          "config_version",
+          "inventory_revision_and_selected_records"
+        ],
+        "unknown_runner_version": "record unknown; do not claim runtime policy enforcement"
+      },
+      "benchmark": {
+        "selection_source": "exact prior 25-record manifest and pinned inventory from the sandbox run",
+        "expected_records": 25,
+        "guess_selection": false,
+        "fallback_to_full_inventory": false,
+        "preserve_previous_reports_and_evidence": true,
+        "compare": [
+          "capture_wall_time",
+          "end_to_end_time",
+          "visits",
+          "failed_or_skipped_interactions",
+          "offer_state_coverage",
+          "evidence_supported_results"
+        ],
+        "explain_result_changes": true,
+        "speed_claim_requires_comparable_coverage": true
+      }
     }
   },
   "results": {

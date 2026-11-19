@@ -60,9 +60,21 @@ Keep tracking URLs and every parameter, including c=, unchanged. For navigation,
 
 Return counts and **Row | Account | Creative | Vanity URL | Tracking URL | Result | Reason**. Explain what already agrees and precisely what remains unverified. Keep optional notes and raw evidence available for follow-up. Match is limited to this desktop advertised-pricing/offer scope, not every page detail.
 
+## Capture execution and speed
+
+Follow [references/capture-execution.md](references/capture-execution.md). Config version 4 adds execution behavior while retaining the current pricing/offer scope, four-worker cap, and timeout values:
+- Continuously fill worker slots instead of fixed batches.
+- Skip disabled actions, verify expected offer states and modal closure, and never repeat unchanged failures.
+- Reuse same-entry pages/baselines when practical, with at most four live isolated contexts and targeted reopening.
+- Record per-operation timings and both instruction and runner revisions.
+
+The execution reference contains implementation acceptance checks. Configuration alone does not implement the scheduler or interaction behavior. The sandbox capture.cjs and its dependencies must be saved in a maintained code location and updated there; they are not present in this repository.
+
+For a same-work benchmark, obtain the exact earlier 25-record manifest and pinned inventory from the sandbox session. Do not guess a selection, replace the five-record pilot, or run the full inventory as fallback. Compare runtime and offer coverage, preserve earlier evidence, and explain result changes. No 25-record benchmark selection file is created until the actual manifest is available.
+
 ## Runtime integration
 
-This repository supplies instructions, configuration, and inventory, not a capture runner. External runners/report aggregators must implement config version 3: classify relevance before converting capture warnings or specialist statuses into a public result. Do not automatically carry forward old blanket timeout/internal-contradiction blockers. Reports already saved are historical; rerun using the updated instructions to reassess them.
+This repository supplies instructions, configuration, and inventory, not a capture runner. External runners/report aggregators must implement config version 4: classify relevance before converting capture warnings or specialist statuses into a public result. Do not automatically carry forward old blanket timeout/internal-contradiction blockers. Reports already saved are historical; rerun using the updated instructions to reassess them.
 
 The intended dedicated runtime uses Playwright/Chromium, such as in Vercel Sandbox, plus durable progress/evidence storage. Configuration does not enforce behavior until the runner uses it. No campaign audit was executed by editing these files.
 

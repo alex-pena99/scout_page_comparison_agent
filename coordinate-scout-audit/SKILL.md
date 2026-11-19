@@ -25,6 +25,7 @@ Resolve paths from the repository root:
 | --- | --- |
 | Inventory | [data/scout-url-inventory.csv](../data/scout-url-inventory.csv) |
 | Capture defaults | [config/audit-config.json](../config/audit-config.json) |
+| Capture execution | [references/capture-execution.md](../references/capture-execution.md) |
 | Development pilot | [config/pilot-config.json](../config/pilot-config.json) |
 | Pricing | [pricing-comparison-workflow-guide.md](../pricing-comparison-workflow-guide.md) |
 | Promo codes | [compare-promo-codes.SKILL.md](../compare-promo-codes.SKILL.md) |
@@ -70,11 +71,13 @@ Key reuse by original/prepared full URL, capture settings, and relevant state wi
 ## 3.1 Read advertised content first
 **Goal:** Capture prices and offers without exhaustively opening every page control.
 
-1. Apply config/audit-config.json: desktop Chromium, 1440 x 900, equivalent locale/region, clean isolated contexts, four concurrent captures, and bounded retries/timeouts.
+1. Apply config/audit-config.json and references/capture-execution.md. Keep existing desktop settings/timeouts and four concurrent captures. Use a continuously filled queue: start the next ready entry when a slot frees, without fixed-batch or whole-pass barriers.
 2. Follow redirects and verify meaningful rendered content. Network-idle or dollar presence alone does not prove readiness.
 3. Read the rendered page, scrolling for lazy content. Identify offer-bearing sections and product tabs; inspect distinct advertised offer views on both sides.
 4. Save original/navigation/final URLs, text, offer locations, selected views, and timestamps. Use screenshots for image-based offers or unclear visual associations.
 5. Keep hidden-loaded references separate. Extraction may retain them diagnostically; they do not establish active offers.
+6. Capture one baseline per entry, then reuse the same page for planned offer states when practical. Keep at most four live capture pages/contexts, isolated between entry URLs. If reopening is necessary, capture the missing state and its prerequisites rather than automatically repeating the full baseline/scroll/screenshots.
+7. Record per-operation timings, queue waits, visits, failed/skipped actions, and scroll/offer-coverage evidence. Record instruction commit, runner revision/content hash, and config version; do not claim the runner uses these policies unless verified.
 
 ## 3.2 Open additional content only for an offer reason
 **Goal:** Obtain necessary offer evidence with minimal interactions.
@@ -82,6 +85,14 @@ Key reuse by original/prepared full URL, capture settings, and relevant state wi
 Open a panel, accordion, pop-up, FAQ, frame, or supporting detail only when its visible label/context suggests an additional in-scope offer or it is needed to compare an advertised fact. A brand heading alone does not require exhaustive inspection of all its content.
 
 Before opening, record the offer fact or offer-bearing section to verify. Reuse information already captured; do not reopen redundant details merely to complete a UI checklist. Do not inspect legal-policy pages, checkout, forms, or excluded administration.
+
+For each necessary interaction:
+1. Select the required product/device view before opening dependent disclosures.
+2. Check visibility, enabled state, and obstructions. Skip a currently disabled action, then assess whether its offer evidence is already available or still missing.
+3. Define success before clicking: for example, Android is selected AND its associated offers are visible. Perform the action and wait for that state within the existing interaction timeout; do not rely on a fixed 450 ms delay.
+4. If a modal blocks progress, dismiss it and verify closure before another dependent action. Do not force-click through it.
+5. Do not repeat a failed action against unchanged state. A specific recovery is allowed only within existing shared budgets; retry only after the obstruction/state actually changes.
+6. Stop carousel traversal when all required offers are visible, the control is disabled, or an action yields no new offer state. Preserve any necessary evidence gap rather than manufacturing Match.
 
 Relevant image-based offer text still needs visual inspection. Do not infer unseen content is irrelevant merely because capture is difficult.
 
@@ -133,7 +144,7 @@ Merge duplicate findings from different specialists; retain their check labels. 
 ## 5.1 Preserve evidence and progress
 **Goal:** Make results traceable and recoverable.
 
-Save completed captures and comparisons through the configured durable storage, including source revision/row, exact URLs, settings/time, offer associations, supporting passages, check results, blocking gaps, and nonblocking notes. Resume only compatible work from the same audit. Disclose save failures separately; they are not website mismatches.
+Save completed captures and comparisons through the configured durable storage, including instruction/runner revisions, source row, exact URLs, settings/time, operation timings, offer associations, supporting passages, check results, blocking gaps, and nonblocking notes. Resume only compatible work from the same audit. Disclose save failures separately; they are not website mismatches.
 
 ## 5.2 Assign the public result
 **Goal:** Give every record one meaningful outcome.
