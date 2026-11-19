@@ -16,6 +16,18 @@ Run `npm ci --prefix capture`. Authenticate the CLI to Centerfield. The named
 use four vCPUs, iad1, and sufficient lifetime for a full capture (45 minutes for
 the initial setup). The runner uses four isolated page contexts concurrently.
 
+On a fresh Ubuntu sandbox, install Chromium's system libraries once (the named
+sandbox preserves installed packages across stops):
+
+```sh
+sandbox exec --sudo --project prj_9p9wuLVeLNdnzZuF0WFJBmtU79Ou --scope centerfield scout-page-captures apt-get update
+sandbox exec --sudo --project prj_9p9wuLVeLNdnzZuF0WFJBmtU79Ou --scope centerfield scout-page-captures apt-get install -y libnss3 libnspr4 fonts-liberation
+```
+
+These packages were verified against the current Ubuntu sandbox image. A runner
+startup failure exits unsuccessfully and retains any recovered artifacts; it
+does not publish an empty capture batch as a successful run.
+
 ## Capture and store
 
 ```sh

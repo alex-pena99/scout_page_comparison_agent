@@ -48,6 +48,7 @@ async function main(){
   await command('tar',['-xzf',join(runDir,'evidence.tgz'),'-C',runDir]);
   const {base,manifest}=await packageBatch(runDir);
   console.log(JSON.stringify({runDirectory:runDir,batchId:manifest.batchId,counts:manifest.counts,captureError}));
+  if(captureError)throw new Error('Capture runner failed; recovered evidence is retained at '+runDir+'. '+captureError);
   if(!captureOnly)await command(process.execPath,['capture/storage.mjs','publish',base]);
   else console.log('Capture-only requested. Private upload remains pending: '+base);
  }finally{await handle.close();await unlink(lock);}
