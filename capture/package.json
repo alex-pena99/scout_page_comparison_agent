@@ -13,5 +13,8 @@
     "@sparticuz/chromium": "153.0.0",
     "playwright": "1.59.1",
     "@vercel/blob": "2.9.0"
+  },
+  "overrides": {
+    "zod": "4.6.7"
   }
 }
