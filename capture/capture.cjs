@@ -133,6 +133,9 @@ function stableDocument(data) {
 
 function locatorFor(page, action) {
   if (action.selector) return page.locator(action.selector);
+  if (action.automatic) return page.getByRole('button',{name:action.label,exact:true})
+    .or(page.getByRole('tab',{name:action.label,exact:true}))
+    .and(page.locator(':not(form *,[role=dialog] *,dialog *)'));
   if (action.aria) return page.getByLabel(action.aria, {exact:true});
   if (action.button) return page.getByRole('button', {name: action.label, exact:true}).or(
     page.getByRole('tab', {name: action.label, exact:true}));
@@ -252,7 +255,7 @@ async function verifyState(page, action, before, timeout) {
     if (expected.excludes && new RegExp(expected.excludes, 'i').test(scope)) return false;
     if (expected.device || expected.selected) {
       const controls = [...document.querySelectorAll(selectedSelector || 'button,[role=tab],[role=button]')]
-        .filter(el=>visible(el) && normalized(el.getAttribute('aria-label') || el.innerText)===selectedLabel);
+        .filter(el=>visible(el) && !el.closest('form,[role=dialog],dialog') && normalized(el.getAttribute('aria-label') || el.innerText)===selectedLabel);
       if (controls.length !== 1) return false;
       const el = controls[0];
       const selected = el.matches('[aria-selected=true],[aria-pressed=true],[data-state=active],[data-active=true],.active,.is-active,.selected,.is-selected') ||
@@ -504,8 +507,9 @@ async function runEntry(browser, input, target, actions, output, job) {
         const found = await discoverHeadlineTabs(page);
         const added=[];
         for (const action of found) {
-          if (discovered.has(action.selector)) continue;
-          discovered.add(action.selector);
+          const identity=action.selector||'label:'+action.label;
+          if (discovered.has(identity)) continue;
+          discovered.add(identity);
           if (discovered.size > 24) {
             attempt.coverage.push({id:'tab-discovery-limit',inspected:false,reason:'Additional primary tabs exceed the bounded discovery limit'});
             break;

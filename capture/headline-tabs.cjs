@@ -26,12 +26,16 @@ async function discoverHeadlineTabs(page) {
       if ((!panel && !semantic && !device && !legacy) || !label || label.length > 80 || forbidden.test(label+' '+(id||'')) ||
           el.closest('form,[role=dialog],dialog') || panel?.matches('dialog,[role=dialog],.modal') ||
           el.matches('[type=submit],[aria-haspopup=dialog],[data-toggle=modal],[data-bs-toggle=modal]')) return [];
-      const selector=cssPath(el);
+      const sameLabel=[...document.querySelectorAll('button,[role=tab]')].filter(n=>visible(n)&&
+        !n.closest('form,[role=dialog],dialog') && (n.getAttribute('aria-label')||n.innerText||'').replace(/\s+/g,' ').trim()===label);
+      // Labels survive hydration/reparenting. Fall back to a scoped CSS path
+      // only when several visible controls share the same label.
+      const selector=sameLabel.length===1?undefined:cssPath(el);
       const scope=panel?'#'+CSS.escape(id):'body';
       return [{label,selector,scope,legacy}];
     });
   });
-  return candidates.map(c=>({id:'tab-'+createHash('sha256').update(c.selector).digest('hex').slice(0,12),
+  return candidates.map(c=>({id:'tab-'+createHash('sha256').update(c.selector||'label:'+c.label).digest('hex').slice(0,12),
     automatic:true,surface:'product-tab',label:c.label,selector:c.selector,reason:'Capture the primary '+c.label+' tab',
     expected:{selected:true,scope:c.scope,visible:c.scope,text:'\\S',...(c.legacy?{selectedClass:'(?:^|\\s)highlight-deal(?:\\s|$)'}:{})}}));
 }

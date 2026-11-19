@@ -81,17 +81,17 @@ test('nested headline views without panel IDs are captured before leaving their 
  const dir=await mkdtemp(path.join(tmpdir(),'scout-nested-tabs-'));
  const html=`<!doctype html><main><h1>Internet and wireless offers</h1><p>${'Compare our headline internet and mobile plans. '.repeat(5)}</p>
  <nav><a href="/wrong">Wireless</a></nav>
- <div role="tablist"><button role="tab" aria-selected="false" id="wireless">Wireless</button><button role="tab" aria-selected="true" id="internet">Internet</button></div>
+ <div role="tablist"><button role="tab" aria-selected="false" data-key="wireless">Wireless</button><button role="tab" aria-selected="true" data-key="internet">Internet</button></div>
  <div id="internetCards">Internet $35/month</div>
- <section id="devices" hidden><button aria-pressed="false" id="apple">Apple iOS</button><button aria-pressed="true" id="android">Android</button><div style="height:1100px"></div><p id="deviceCard">Galaxy $10/month</p></section>
- <button role="tab" aria-selected="false" id="hyper">Hyper-gig speeds</button><p id="speedCard">1 GIG $55/month</p>
- <button role="tab" aria-selected="false" id="terms">Offer terms</button>
+ <section id="devices" hidden><button aria-pressed="false" data-key="apple">Apple iOS</button><button aria-pressed="true" data-key="android">Android</button><div style="height:1100px"></div><p id="deviceCard">Galaxy $10/month</p></section>
+ <button role="tab" aria-selected="false" data-key="hyper">Hyper-gig speeds</button><p id="speedCard">1 GIG $55/month</p>
+ <button role="tab" aria-selected="false" data-key="terms">Offer terms</button>
  <form><button aria-pressed="false" type="submit">Android</button></form>
  <div id="consent-banner" style="position:fixed;bottom:0;background:white">Cookies <button id="consent">Continue without changes</button></div>
  </main><script>
- const el=id=>document.getElementById(id);
+ const el=id=>document.getElementById(id)||document.querySelector('[data-key="'+id+'"]');
  el('consent').onclick=()=>el('consent-banner').hidden=true;
- for(const id of ['wireless','internet'])el(id).onclick=()=>{for(const x of ['wireless','internet'])el(x).setAttribute('aria-selected',String(x===id));el('devices').hidden=id!=='wireless';el('internetCards').hidden=id!=='internet';};
+ for(const id of ['wireless','internet'])el(id).onclick=()=>{for(const x of ['wireless','internet'])el(x).setAttribute('aria-selected',String(x===id));if(id==='wireless'){const group=el('wireless').parentElement;const wrap=document.createElement('div');group.before(wrap);wrap.append(group);}el('devices').hidden=id!=='wireless';el('internetCards').hidden=id!=='internet';};
  for(const id of ['apple','android'])el(id).onclick=()=>{for(const x of ['apple','android'])el(x).setAttribute('aria-pressed',String(x===id));el('deviceCard').textContent=id==='apple'?'iPhone $5/month':'Galaxy $10/month';};
  el('hyper').onclick=()=>{el('hyper').setAttribute('aria-selected','true');el('speedCard').textContent='2 GIG $65/month and 5 GIG $95/month';};
  el('terms').onclick=()=>el('speedCard').textContent='UNEXPECTED DISCLOSURE';
