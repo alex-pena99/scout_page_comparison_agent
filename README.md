@@ -54,12 +54,16 @@ No filter means the full inventory. The existing [five-record pilot](config/pilo
 
 Keep dedicated desktop Chromium (1440 x 900), equivalent locale/region, clean isolated contexts, the continuously filled four-worker queue, bounded same-entry reuse, targeted reopening, state verification, one transient retry/shared targeted recheck, existing timeouts, and operation timings. Do not repeat disabled/unchanged failures. TLS validation, access protections, and source read-only behavior remain intact. See the execution reference for exact limits and acceptance checks.
 
-## What the sandbox session still must implement
+## Maintained implementation
 
-This repository contains no maintained capture runner or report-builder code. Config version 5 and the guides define headline-only behavior; they do not update the external runtime automatically.
+Follow the [end-to-end run instructions](docs/run.md) to pin a selection, capture evidence, review headline facts, package a report and publish it to the existing private viewer.
 
-Update the actual capture.cjs, interaction planner, result aggregator, and report builder to use four active headline checks, stop eligibility/terms/FAQ/disclosure tasks (including old queued tasks), ignore supporting-term failures, preserve genuine unreadable-headline gaps, and use the exact report label in new HTML/exports/metadata. Preserve the capture optimizations and record both runner and instruction versions. The handoff and controlled acceptance cases are in [capture-execution.md](references/capture-execution.md).
+| Path | Role |
+| --- | --- |
+| [capture/](capture/) | Selection, Playwright runner, headline action planning and controlled browser fixture. |
+| [comparison/](comparison/) | Validate reviewed facts against captured evidence and produce one result per selected row. |
+| [reporting/](reporting/) | Assemble and verify the saved report and its evidence, then publish to private Blob when authorized. |
+| [web/](web/) | Source for the existing private report viewer. |
+| [docs/](docs/) | Setup, run, resume and verification instructions. |
 
-Preserve historical reports and evidence. Do not automatically relabel or rewrite old results. A requested reassessment produces a separate report/version with its evidence date and new scope. Do not claim an equivalent-work speedup against an older broader audit without reconciling headline coverage.
-
-No live audit, deployment, or historical reassessment is performed merely by updating this repository. No new architecture is required.
+The runner originated in `aeb9e2f` and the maintained implementation applies config version 5. Keep the private run directory, audit evidence and credentials outside Git. Preserve historical reports and evidence. A requested reassessment produces a separate report with its evidence date and scope. Repository changes do not start captures or deploy the viewer.

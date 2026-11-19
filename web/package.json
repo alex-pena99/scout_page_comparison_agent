@@ -1,0 +1,8 @@
+{
+  "name": "scout-pm-reports",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "24.x" },
+  "dependencies": { "@vercel/blob": "2.9.0" },
+  "scripts": { "check": "node --check api/report.js && node --check lib/view.js && node --check public/report.js" }
+}

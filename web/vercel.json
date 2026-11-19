@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/reports/:auditId/evidence/:asset", "destination": "/api/report?auditId=:auditId&asset=:asset" },
+    { "source": "/reports/:auditId", "destination": "/api/report?auditId=:auditId" }
+  ]
+}
