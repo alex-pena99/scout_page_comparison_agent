@@ -1,5 +1,5 @@
 {
-  "config_version": 1,
+  "config_version": 2,
   "inventory": {
     "path": "data/scout-url-inventory.csv",
     "required_columns": [
@@ -7,8 +7,7 @@
       "Vanity URL",
       "Tracking URL",
       "Position",
-      "Creative Name",
-      "Creative ID"
+      "Creative Name"
     ],
     "default_selection": "all_records",
     "csv_header_row": 1
@@ -94,5 +93,11 @@
     "preserve_creative_context": true,
     "checkpoint_after_capture_and_comparison": true,
     "durable_storage_required": true
+  },
+  "comparison": {
+    "basis": "delivered_page_content",
+    "creative_name_role": "supporting_context_only",
+    "tracking_parameters": "preserve_unchanged_do_not_validate_against_inventory",
+    "legacy_extra_columns": "ignore_unneeded_metadata"
   }
 }

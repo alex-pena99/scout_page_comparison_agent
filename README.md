@@ -10,7 +10,7 @@ This is Scout's master step-by-step protocol. It coordinates the five specialist
 
 The master guide controls:
 1. **Start:** Establish scope, load a consistent repository revision, and verify capture capability.
-2. **Validate:** Preserve records, check inputs and creative IDs, apply configured template rules, and plan capture reuse.
+2. **Validate:** Preserve records, check URL inputs, apply configured template rules, and plan capture reuse.
 3. **Capture:** Collect shared page evidence and relevant promotional states.
 4. **Compare:** Align offers, apply all five guides, coordinate handoffs, and recheck uncertainty.
 5. **Save:** Checkpoint progress and preserve evidence throughout execution.
@@ -36,13 +36,21 @@ Pricing includes every literal dollar-sign occurrence within the declared captur
 
 Default source: [data/scout-url-inventory.csv](data/scout-url-inventory.csv).
 
-Columns: **Account, Vanity URL, Tracking URL, Position, Creative Name, Creative ID**.
+Columns: **Account, Vanity URL, Tracking URL, Position, Creative Name**.
 
 - Preserve every source record and its creative context.
 - Reuse equivalent captures while validating each record separately.
-- Preserve full tracking parameters; never silently repair creative IDs.
+- Preserve every tracking parameter, including c=; never change the delivered routing to make pages agree.
 - Record the inventory and guide commit used for each audit.
 - Treat this CSV as a versioned snapshot, not a live spreadsheet connection.
+
+## Content-only comparison
+
+Scout does not require or validate Creative ID. Ignore it in legacy inputs; do not generate campaign-ID mismatch or missing-ID findings. The inventory has five columns and keeps every original record. Creative Name provides context only: labels alone cannot trigger Needs Review or override matching delivered content.
+
+Compare actual offers on the supplied pages. Preserve complete tracking URLs, including c=, because parameters may determine what loads. Input failures, unrelated page experiences, ambiguity, and capture/coverage problems still require review. Read historical results as old audit records; rerun with the new instructions to obtain content-only results.
+
+This repository contains no capture runner or result-aggregation implementation. Any external deployed runner must also remove ID-based gates and load this updated inventory/configuration; changing these files does not retroactively change saved reports.
 
 ## V1 capture defaults
 
@@ -63,8 +71,8 @@ Open tracking links as supplied, retaining advertising placeholders and all para
 ### Pilot versus full audit
 
 - **Full audit:** With no filter, select every record from the inventory at the run's recorded commit.
-- **Development pilot:** Explicitly request the pilot in [config/pilot-config.json](config/pilot-config.json). It selects CSV rows **2, 16, 17, 100, and 111** (header is row 1) from the pinned approved inventory revision. They cover baseline, product views, shared URLs with different creative IDs, differing page experiences, and missing input.
-- Before pilot capture, validate its inventory revision/hash, five-record count, and exact six-column record guards. A selection error aborts the pilot; **never fall back to all 135 records**. The selected rows' existing input issues remain audit findings.
+- **Development pilot:** Explicitly request the pilot in [config/pilot-config.json](config/pilot-config.json). It selects CSV rows **2, 16, 17, 100, and 111** (header is row 1) from the pinned approved inventory revision. They cover baseline, product views, shared URLs with different descriptive labels, differing page experiences, and missing input.
+- Before pilot capture, validate its inventory revision/hash, five-record count, and exact five-column record guards. A selection error aborts the pilot; **never fall back to all 135 records**. The selected rows' existing input issues remain audit findings.
 - Record both the instruction commit and pinned pilot-inventory revision. Never apply pilot row numbers to another inventory. A future inventory update requires explicit pilot revalidation.
 - Known pilot cases are test coverage, not precomputed current website results. No campaign captures have been executed by adding these configs.
 
@@ -74,7 +82,7 @@ Open tracking links as supplied, retaining advertising placeholders and all para
 | --- | --- |
 | Match | All required checks completed within scope, comparison is valid, and no differences or unresolved blockers remain. |
 | Mismatch | A confirmed difference exists within a valid comparison scope. Mention additional incomplete checks in the reason. |
-| Needs Review | Input, identity, offer alignment, capture, ambiguity, or coverage prevents a supported Match and no qualifying confirmed mismatch establishes the result. |
+| Needs Review | Input, offer alignment, capture, ambiguity, or coverage prevents a supported Match and no qualifying confirmed mismatch establishes the result. |
 
 Return a count of results and a simple table:
 

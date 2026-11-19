@@ -14,13 +14,16 @@ description: Identify, classify, and compare advertised offer dates and duration
 - Supplied evidence satisfies a stage only when its required content, state, settings, and provenance are present. Otherwise return a precise evidence request; do not rerun unrelated intake, navigation, or other guides.
 - Reuse reveals/rechecks that already satisfy the same evidence need. Specialist retry instructions do not create additional independent retry budgets.
 - Return raw results, exact evidence, scope, blockers, and related handoffs to the coordinator. Its report replaces five independent PM-facing reports; its status aggregation does not erase specialist findings.
+- Compare delivered page content. Creative Name is supporting context, not a campaign-validation gate. Do not validate or use Creative ID, even if supplied in legacy inputs; keep tracking URL parameters unchanged.
 - For a standalone check, perform missing shared stages using the same defaults. Open tracking templates as supplied; placeholder presence alone is not a blocker. Never silently substitute click values.
 
+
+Creative Name is optional supporting context: a label difference alone must not block or change a page-content comparison.
 
 ## Objective and boundaries
 Find advertised time information, connect it to the correct offer or benefit, and compare equivalent timing fields across paired pages.
 
-Accept URL pairs or spreadsheet rows containing Account, Vanity URL, Tracking template, Creative Name, and Creative ID. Preserve original row identities. If metadata is missing, define scope from page evidence and disclose the limitation.
+Accept URL pairs or spreadsheet rows containing Account, Vanity URL, Tracking template, Position, and Creative Name. Preserve original row identities. If metadata is missing, define scope from page evidence and disclose the limitation.
 
 Inspect promotional content, relevant product views, offer interactions, and FAQs. Keep legal terms review, checkout testing, form submission, and source modification outside scope. Do not calculate customer-specific deadlines without an explicitly supplied starting event and date.
 
@@ -31,15 +34,18 @@ Use [Pricing](pricing-comparison-workflow-guide.md), [Promo Codes](compare-promo
 ### 1.1 Read the input and creative
 **Goal:** Identify the intended experience and source rows.
 - Read current spreadsheet metadata, headers, and bounded relevant rows when a spreadsheet is supplied.
-- Retain account, row identity, creative name/ID, and exact URLs.
+- Retain account, row identity, creative name, and exact URLs.
 - Treat names such as Deals, Internet, and Customer Service as experience labels that may contain multiple offers.
 - Trim surrounding whitespace for matching. Preserve original URLs, paths, parameters, and placeholders; add a missing scheme only for navigation.
 **Output:** Row inventory and intended comparison scope.
 
-### 1.2 Validate tracking identity
-**Goal:** Detect a link requesting a different creative.
-Compare the listed Creative ID with the tracking URL's `c=` parameter. Record missing values or discrepancies. Do not silently repair links or substitute another page.
-**Output:** Creative validation and input issues.
+### 1.2 Preserve supplied URLs
+**Goal:** Check usable inputs without validating campaign identifiers.
+- Check missing or malformed URLs; preserve the exact tracking template and parameters.
+- Do not compare inventory metadata with tracking parameters or infer campaign identity.
+- Use Creative Name only as supporting context; compare actual delivered offers.
+- Do not repair links, substitute a root page, or switch to a better-matching URL.
+**Output:** URL-input issues and preserved navigation requests.
 
 ## Stage 2 — Capture delivered content
 
@@ -62,7 +68,7 @@ Reuse extracted timing inventories, but evaluate each row's creative scope separ
 ### 2.3 Confirm comparability
 **Goal:** Avoid comparing unrelated timing statements.
 Read headings, products, sections, and calls to action. Align corresponding offers by provider, product/plan, benefit, and creative context.
-Flag a known wrong creative, wrong experience, or absent corresponding offer as INCORRECT_COMPARISON. Do not call a sales-page duration missing from an unrelated support-page offer.
+Flag a known wrong page experience or absent corresponding offer as INCORRECT_COMPARISON. Do not call a sales-page duration missing from an unrelated support-page offer.
 **Output:** Aligned offers or an alignment finding.
 
 ## Stage 3 — Find time information
@@ -194,7 +200,7 @@ Keep unavailable required states INCOMPLETE. Say not found in checked content ra
 
 | Result | Meaning |
 | --- | --- |
-| INCORRECT_COMPARISON | Known creative/experience conflict or no corresponding offer |
+| INCORRECT_COMPARISON | Known page-experience conflict or no corresponding offer |
 | INCOMPLETE | Required input, capture, coverage, or stability remains unresolved |
 | AMBIGUOUS | Association, date interpretation, boundary, or starting event cannot be resolved for the requested comparison |
 | TIMING_DIFFERENCE | Corresponding fields differ or are stated on only one side |
@@ -206,7 +212,7 @@ Apply blockers before interpreting empty inventories. Keep observed findings eve
 
 ### 7.2 Deliver traceable evidence
 **Goal:** Make every timing conclusion reviewable.
-Report original row, creative name/ID, tracking validation, supplied/final URLs, capture references, offer/subject, category, exact wording on each side, interpreted values, starting events, result, and coverage gaps.
+Report original row, creative name, URL-input issues, supplied/final URLs, capture references, offer/subject, category, exact wording on each side, interpreted values, starting events, result, and coverage gaps.
 
 Use:
 `Row | Offer | Timing category | Vanity wording | Tracking wording | Starting event | Result`

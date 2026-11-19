@@ -77,7 +77,7 @@ References are handoffs, not recursive audits. Missing guides or unresolved inst
 **Goal:** Retain the full inventory and creative context.
 
 Require these CSV headers:
-Account, Vanity URL, Tracking URL, Position, Creative Name, Creative ID.
+Account, Vanity URL, Tracking URL, Position, Creative Name.
 
 1. Parse with a CSV parser that preserves quoted commas and empty fields.
 2. Assign internal record IDs using inventory version and CSV row; count the header as row 1.
@@ -85,25 +85,23 @@ Account, Vanity URL, Tracking URL, Position, Creative Name, Creative ID.
 4. Ignore wholly empty rows, but retain partially populated records.
 5. Record missing required columns rather than guessing their meaning.
 
-## 2.2 Check URLs and creative identity
-**Goal:** Expose input problems without changing campaign intent.
+## 2.2 Validate URL inputs only
+**Goal:** Prepare usable links without campaign-ID validation.
 
-For each record:
-1. Check missing vanity/tracking URLs and missing identity metadata.
-2. Trim surrounding URL whitespace for navigation only.
-3. Add https:// for navigation when a scheme is absent.
-4. Preserve paths, query parameters, their order, and advertising placeholders.
-5. Compare Creative ID with tracking c=; record missing, ambiguous, or conflicting values.
-6. Never repair tracking IDs or substitute another landing page.
-
-An identity discrepancy blocks intended-creative verification even if pages agree. Preserve it alongside observable content.
+1. Check missing vanity/tracking URLs and malformed navigation values.
+2. Trim surrounding whitespace for navigation; add https:// only when a scheme is absent.
+3. Preserve paths, all query parameters, their order, and placeholders, including c=.
+4. Never compare tracking parameters with inventory metadata or infer an expected campaign ID.
+5. Ignore Creative ID if present in legacy inputs; do not require, extract, compare, save, or report it as an audit field.
+6. Use Creative Name only as supporting context. A label difference alone cannot cause Needs Review; establish correspondence from delivered page evidence.
+7. Never substitute another landing page to make a comparison pass.
 
 ## 2.3 Open supplied tracking templates
 **Goal:** Test supplied links without inventing advertising inputs.
 
 1. Open tracking URLs as supplied; preserve placeholders and query parameters.
 2. Apply only surrounding-whitespace trimming and a missing navigation scheme. Normal browser URL encoding is permitted; retain the actual navigation and final URLs.
-3. Do not replace {lpurl}, fabricate click values, strip parameters, or repair creative IDs.
+3. Do not replace {lpurl}, fabricate click values, strip parameters, or alter tracking parameters.
 4. Follow normal redirects and inspect the destination. Placeholder presence alone is not an error or blocker.
 5. If a link cannot deliver a usable destination, report Needs Review rather than guessing a replacement.
 6. Label captures as supplied-template observations, not simulations of resolved real advertising clicks.
@@ -115,7 +113,7 @@ An identity discrepancy blocks intended-creative verification even if pages agre
 1. Key capture reuse by original full URL, prepared URL, template policy, settings, and required page state.
 2. Reuse equivalent captures within the same audit only.
 3. Retain every original record, including exact duplicate records.
-4. Validate every record's creative context separately.
+4. Preserve each record's Creative Name as context; evaluate its delivered offers independently.
 
 # Stage 3 — Capture
 
@@ -238,7 +236,7 @@ On resume, restore only compatible completed work from the same audit. Recapture
 
 Apply in order:
 1. **Mismatch:** At least one confirmed difference exists within a valid corresponding comparison scope. Mention additional incomplete checks or input problems in the reason.
-2. **Needs Review:** No qualifying confirmed mismatch establishes the result, but identity conflicts, incorrect comparison, ambiguity, variable content, missing inputs, incomplete captures, required coverage gaps, or unavailable guides prevent Match.
+2. **Needs Review:** No qualifying confirmed mismatch establishes the result, but incorrect comparison, ambiguity, variable content, missing inputs, incomplete captures, required coverage gaps, or unavailable guides prevent Match.
 3. **Match:** All required checks completed within declared scope, comparison is valid, and no differences or unresolved blockers remain.
 
 Mapping rules:
@@ -247,7 +245,6 @@ Mapping rules:
 - Preserve Pricing's literal-text differences. Label loaded-only or wording-only findings accurately, without implying a value change or active advertised discrepancy.
 - Treat confirmed requirement specificity differences as content differences; retain unresolved meaning/association as Needs Review.
 - An incorrect comparison alone is Needs Review, not a manufactured content mismatch.
-- Matching content does not erase a creative-ID discrepancy.
 - An internal contradiction on both pages requires review even when text matches, unless another confirmed cross-page difference establishes Mismatch.
 - Preserve content results separately from evidence-save/delivery failures, and disclose those operational limitations.
 
@@ -260,7 +257,7 @@ Confirm:
 1. Every selected record has exactly one public result.
 2. Each required check has a result or explicit blocker.
 3. Shared captures map back to all affected records.
-4. Creative identities and validation findings remain separate.
+4. Record context is preserved and all findings concern page content, URL usability, or coverage; no campaign-ID validation is performed.
 5. No unchecked surface is represented as reviewed.
 6. Public result totals equal the selected record count.
 7. Confirmed differences remain visible despite broader blockers.
@@ -276,7 +273,7 @@ Return a short count of Match, Mismatch, and Needs Review, followed by:
 | --- | --- | --- | --- | --- | --- | --- |
 
 - Keep source-record order and use clickable URL labels.
-- Retain exact URLs and Creative IDs in saved results.
+- Retain exact URLs, Position, and Creative Name in saved results; omit campaign-ID audit fields.
 - Give short, specific reasons; mention incomplete checks alongside Mismatch.
 - Explain any material coverage limitation briefly.
 - Retain detailed specialist findings, captures, settings, and retries as supporting evidence rather than flooding the initial report.

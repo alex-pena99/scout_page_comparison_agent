@@ -1,12 +1,12 @@
 {
-  "config_version": 1,
+  "config_version": 2,
   "mode": "development_pilot",
   "base_config": "config/audit-config.json",
   "inventory": {
     "path": "data/scout-url-inventory.csv",
-    "revision": "373fb9daaa92cebaf9318ec90e619a6dbac7f745",
-    "git_blob_sha": "3ce63fd9cb9d0d7f1f4046287ff4902118c06a4d",
-    "sha256_utf8": "224185296c9aa9ddf642eb338fc980bda3aa4eb22302e8c3b30689aa34ae0d81",
+    "revision": "8c0d7b2004cb0264f51e0b20c1835dbe8ff47742",
+    "git_blob_sha": "04974527152ed1b87da84b63213676ecdd7e463c",
+    "sha256_utf8": "c9303143b1882633bfb3e8f836d109b907fa6ec18421ab6f608b69a6b1dd10c7",
     "csv_header_row": 1
   },
   "selection": {
@@ -20,8 +20,7 @@
           "Vanity URL": "www.internetservicecompanies.com/",
           "Tracking URL": "https://tracking.internetservicecompanies.com/?a=144&c=104663&s1={adgroupid}&s2={keyword}.{targetid}&s3={matchtype}.{network}.{creative}&s4={device}&s5={adposition}.{placement}&s6={loc_physical_ms}&ls=g&s20=129692&url={lpurl}",
           "Position": "",
-          "Creative Name": "Default",
-          "Creative ID": "104663"
+          "Creative Name": "Default"
         },
         "purpose": "Baseline supplied tracking template"
       },
@@ -32,8 +31,7 @@
           "Vanity URL": "www.att.com/cfd/deals/",
           "Tracking URL": "https://www.att.com/cfd/tracking/?a=144&c=107795&s1={adgroupid}&s2={keyword}.{targetid}&s3={matchtype}.{network}.{creative}&s4={device}&s5={adposition}.{placement}&s6={loc_physical_ms}&ls=g&s20=105378&s19=EPDxATFIB00C23CFP&url={lpurl}",
           "Position": "P1",
-          "Creative Name": "Deals",
-          "Creative ID": "107795"
+          "Creative Name": "Deals"
         },
         "purpose": "Deals page with relevant product views"
       },
@@ -44,10 +42,9 @@
           "Vanity URL": "www.att.com/cfd/deals/",
           "Tracking URL": "https://www.att.com/cfd/tracking/?a=144&c=107795&s1={adgroupid}&s2={keyword}.{targetid}&s3={matchtype}.{network}.{creative}&s4={device}&s5={adposition}.{placement}&s6={loc_physical_ms}&ls=g&s20=105378&s19=EPDxATFIB00C23CFP&url={lpurl}",
           "Position": "P1",
-          "Creative Name": "Internet - Managed",
-          "Creative ID": "107800"
+          "Creative Name": "Internet - Managed"
         },
-        "purpose": "Same URL pair with different creative identity"
+        "purpose": "Reuse the same captured URL pair while preserving separate descriptive labels; labels are not validation gates"
       },
       {
         "csv_row": 100,
@@ -56,10 +53,9 @@
           "Vanity URL": "https://www.optimum.com/cf/",
           "Tracking URL": "https://www.optimum.com/cf/tracking/?a=144&c=113651&s1={adgroupid}&s2={keyword}.{targetid}&s4={device}&s5={adposition}.{placement}&s6={loc_physical_ms}&ls=g&s20=113541&url={lpurl}",
           "Position": "P1",
-          "Creative Name": "Internet",
-          "Creative ID": "112381"
+          "Creative Name": "Internet"
         },
-        "purpose": "Different sales/support experience and creative discrepancy"
+        "purpose": "Verify page-content correspondence and detect a sales/support experience difference if observed"
       },
       {
         "csv_row": 111,
@@ -68,8 +64,7 @@
           "Vanity URL": "",
           "Tracking URL": "https://www.optimum.com/cf/tracking/?a=144&c=114830&s1={adgroupid}&s2={keyword}.{targetid}&s4={device}&s5={adposition}.{placement}&s6={loc_physical_ms}&ls=g&s20=124069&url={lpurl}",
           "Position": "p1",
-          "Creative Name": "1mf",
-          "Creative ID": "114830"
+          "Creative Name": "1mf"
         },
         "purpose": "Missing vanity input"
       }
@@ -84,5 +79,5 @@
     "If a count, row, guard, revision, or hash check fails, stop before capture and report the selection error.",
     "Validation problems inside correctly selected records are intended audit inputs, not pilot-selection errors."
   ],
-  "note": "Configured development sample, not a completed audit. Known input cases do not predetermine current page-content findings."
+  "note": "Configured content-comparison sample, not a completed audit. Campaign IDs are not evaluated. Known page cases do not predetermine current content findings."
 }

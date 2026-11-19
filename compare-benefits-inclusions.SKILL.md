@@ -1,6 +1,6 @@
 ---
 name: compare-benefits-inclusions
-description: Identify and compare advertised rewards, promotional devices, equipment, installation, included features, credits, and guarantees across vanity and tracking URL pairs. Use for individual pairs, repeated URL lists, or spreadsheet rows with creative names and IDs. Flag incorrect comparisons and preserve each row's creative context while reusing equivalent captures.
+description: Identify and compare advertised rewards, promotional devices, equipment, installation, included features, credits, and guarantees across vanity and tracking URL pairs. Use for individual pairs, repeated URL lists, or spreadsheet rows with creative names. Flag incorrect comparisons and preserve each row's creative context while reusing equivalent captures.
 ---
 
 # Compare Benefits and Inclusions
@@ -14,13 +14,16 @@ description: Identify and compare advertised rewards, promotional devices, equip
 - Supplied evidence satisfies a stage only when its required content, state, settings, and provenance are present. Otherwise return a precise evidence request; do not rerun unrelated intake, navigation, or other guides.
 - Reuse reveals/rechecks that already satisfy the same evidence need. Specialist retry instructions do not create additional independent retry budgets.
 - Return raw results, exact evidence, scope, blockers, and related handoffs to the coordinator. Its report replaces five independent PM-facing reports; its status aggregation does not erase specialist findings.
+- Compare delivered page content. Creative Name is supporting context, not a campaign-validation gate. Do not validate or use Creative ID, even if supplied in legacy inputs; keep tracking URL parameters unchanged.
 - For a standalone check, perform missing shared stages using the same defaults. Open tracking templates as supplied; placeholder presence alone is not a blocker. Never silently substitute click values.
 
+
+Creative Name is optional supporting context: a label difference alone must not block or change a page-content comparison.
 
 ## Objective and boundaries
 Identify advertised benefits, associate them with the correct offers, compare corresponding claims, and flag mismatches or incorrect comparisons.
 
-Accept URL pairs or spreadsheet rows containing Account, Vanity URL, Tracking template, Creative Name, and Creative ID. Preserve original row identities. If metadata is absent, establish scope from page evidence and disclose the missing metadata.
+Accept URL pairs or spreadsheet rows containing Account, Vanity URL, Tracking template, Position, and Creative Name. Preserve original row identities. If metadata is absent, establish scope from page evidence and disclose the missing metadata.
 
 Focus on promotional content and relevant product tabs, offer pop-ups, and FAQs. Keep legal terms review, checkout testing, purchases, form submission, and source modification outside this skill.
 
@@ -31,18 +34,18 @@ Use the [pricing workflow](pricing-comparison-workflow-guide.md) for monetary co
 ### 1.1 Read the URL inventory
 **Goal:** Identify the exact entry points and source records.
 - Read current spreadsheet metadata, headers, and bounded relevant rows when a spreadsheet is supplied.
-- Retain account, original row, creative name/ID, vanity URL, and complete tracking URL.
+- Retain account, original row, creative name, vanity URL, and complete tracking URL.
 - Trim surrounding whitespace for matching; preserve supplied URL values.
 - Add a missing scheme only for navigation. Preserve paths, query parameters, and placeholders.
 **Output:** Row inventory with intended scope.
 
-### 1.2 Validate creative identity
-**Goal:** Detect a tracking URL that requests the wrong creative.
-- Compare the listed Creative ID with the tracking URL's `c=` value.
-- Record missing inputs or discrepancies separately.
-- Treat Homepage, Deals, Internet, and Customer Service as experience labels, not necessarily individual offers.
-- Do not silently rewrite a link, substitute a root page, or replace the requested comparison with a better-matching page.
-**Output:** Creative validation and input issues.
+### 1.2 Preserve supplied URLs
+**Goal:** Check usable inputs without validating campaign identifiers.
+- Check missing or malformed URLs; preserve the exact tracking template and parameters.
+- Do not compare inventory metadata with tracking parameters or infer campaign identity.
+- Use Creative Name only as supporting context; compare actual delivered offers.
+- Do not repair links, substitute a root page, or switch to a better-matching URL.
+**Output:** URL-input issues and preserved navigation requests.
 
 ## Stage 2 — Capture delivered experiences
 
@@ -61,7 +64,7 @@ Use the [pricing workflow](pricing-comparison-workflow-guide.md) for monetary co
 - Reuse captures within the run only when the exact input URL, settings, and required interaction state match.
 - Do not merge different tracking URLs because they have similar destinations.
 - Reuse extracted benefit inventories from equivalent captures.
-- Keep every row's creative scope and tracking-ID validation separate.
+- Keep every row's creative scope and URL-input validation separate.
 - Reuse a conclusion only when both captures and intended scope are equivalent.
 **Output:** Capture references mapped to each original row.
 
@@ -74,10 +77,10 @@ Read the main heading, product sections, promotional blocks, and calls to action
 
 ### 3.2 Establish offer alignment
 **Goal:** Prevent an incorrect comparison from becoming a misleading list of missing benefits.
-- Confirm that the entry points address the intended creative and contain corresponding offers.
+- Confirm that the delivered pages contain corresponding offers. Use Creative Name as context, never as proof of a wrong campaign.
 - Align by provider, product/plan, offer heading, surrounding content, and selected product view.
 - Use position and wording as supporting clues, not sole matching rules.
-- Flag wrong experiences, conflicting creative identity, and absent corresponding offers explicitly.
+- Flag wrong page experiences and absent corresponding offers explicitly.
 - Report known alignment failures as INCORRECT_COMPARISON. Use AMBIGUOUS when evidence cannot resolve the alignment.
 - Preserve observations, but do not label every sales-page benefit missing from an unrelated support page.
 **Output:** Aligned offers, an incorrect comparison, or unresolved alignment.
@@ -179,7 +182,7 @@ Preserve variation between attempts; do not select a preferred capture silently.
 
 | Result | Meaning |
 | --- | --- |
-| INCORRECT_COMPARISON | Known creative or experience conflict, or no corresponding offer to compare |
+| INCORRECT_COMPARISON | Known page-experience conflict, or no corresponding offer to compare |
 | INCOMPLETE | Missing required input/capture/coverage, unstable evidence, or an unresolved required handoff |
 | AMBIGUOUS | Available evidence cannot resolve a claim or offer association |
 | BENEFIT_DIFFERENCE | Aligned inspected claims are missing, additional, or meaningfully different |
@@ -192,13 +195,13 @@ Do not return an unconditional row match when required checks remain unresolved.
 
 ### 7.2 Map and reconcile source rows
 **Goal:** Account for every original record without overstating independent tests.
-Map shared evidence to all source rows, retain creative discrepancies, and identify reused captures. Reconcile original rows, unique pairs/captures, and row-level outcome totals.
+Map shared evidence to all source rows, retain each record's offer-label context, and identify reused captures. Reconcile original rows, unique pairs/captures, and row-level outcome totals.
 **Output:** Complete row mapping.
 
 ### 7.3 Deliver concise evidence
 **Goal:** Make each conclusion reviewable.
 Report:
-- Row identity, creative name/ID, and tracking validation.
+- Row identity, creative name, and URL-input issues.
 - Input and final URLs, capture references, and relevant settings.
 - Corresponding offer, benefit, qualifiers, and page locations.
 - Exact vanity and tracking evidence, with shortened excerpts labeled.

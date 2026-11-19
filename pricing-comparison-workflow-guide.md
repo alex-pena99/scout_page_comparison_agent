@@ -14,6 +14,7 @@ description: Compare all literal dollar-sign content across vanity and tracking 
 - Supplied evidence satisfies a stage only when its required content, state, settings, and provenance are present. Otherwise return a precise evidence request; do not rerun unrelated intake, navigation, or other guides.
 - Reuse reveals/rechecks that already satisfy the same evidence need. Specialist retry instructions do not create additional independent retry budgets.
 - Return raw results, exact evidence, scope, blockers, and related handoffs to the coordinator. Its report replaces five independent PM-facing reports; its status aggregation does not erase specialist findings.
+- Compare delivered page content. Creative Name is supporting context, not a campaign-validation gate. Do not validate or use Creative ID, even if supplied in legacy inputs; keep tracking URL parameters unchanged.
 - For a standalone check, perform missing shared stages using the same defaults. Open tracking templates as supplied; placeholder presence alone is not a blocker. Never silently substitute click values.
 
 
@@ -29,7 +30,7 @@ Read rendered text and loaded DOM dollar segments after redirects. Extend captur
 ### 1.1 Read the inventory
 **Goal:** Identify the exact URLs and original row identities.
 - For spreadsheets, read metadata, the actual tab's headers, then bounded populated ranges.
-- Retain row number, account, vanity URL, tracking URL, creative name, and creative ID where supplied.
+- Retain row number, account, vanity URL, tracking URL, position, and creative name.
 **Output:** Structured input rows.
 
 ### 1.2 Validate without changing intent
@@ -37,7 +38,6 @@ Read rendered text and loaded DOM dollar segments after redirects. Extend captur
 - Trim surrounding whitespace. Add `https://` for navigation when the scheme is absent.
 - Preserve paths, query parameters, and placeholders such as `{adgroupid}`.
 - Flag missing URLs. Do not substitute a root URL for a missing vanity URL.
-- Flag discrepancies between the creative ID and tracking `c=` parameter; test the supplied URL without silently correcting it.
 **Output:** Validated rows with input-issue notes.
 
 ## Stage 2 — Deduplicate
@@ -192,7 +192,7 @@ Apply blockers before comparing empty arrays. A text/sequence match alone is an 
 
 ### 7.2 Map results and reconcile totals
 **Goal:** Return an accountable result for every input row.
-Map each unique result to all original rows. Mark duplicates as shared comparisons. Keep creative-ID inconsistencies separate from pricing findings.
+Map each unique result to all original rows. Mark duplicates as shared comparisons.
 Reconcile input rows, unique entries, duplicate rows removed, missing-input entries, and result totals.
 **Output:** Complete row mapping and coverage summary.
 

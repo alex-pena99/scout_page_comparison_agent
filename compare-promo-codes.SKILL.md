@@ -1,6 +1,6 @@
 ---
 name: compare-promo-codes
-description: Find, associate, and compare advertised promo or redemption codes across vanity and tracking URL pairs. Use for individual pairs, repeated URL lists, or spreadsheet rows with creative names and IDs. Preserve each row's intended offer context while reusing equivalent page captures.
+description: Find, associate, and compare advertised promo or redemption codes across vanity and tracking URL pairs. Use for individual pairs, repeated URL lists, or spreadsheet rows with creative names. Preserve each row's intended offer context while reusing equivalent page captures.
 ---
 
 # Compare Promo Codes
@@ -14,8 +14,11 @@ description: Find, associate, and compare advertised promo or redemption codes a
 - Supplied evidence satisfies a stage only when its required content, state, settings, and provenance are present. Otherwise return a precise evidence request; do not rerun unrelated intake, navigation, or other guides.
 - Reuse reveals/rechecks that already satisfy the same evidence need. Specialist retry instructions do not create additional independent retry budgets.
 - Return raw results, exact evidence, scope, blockers, and related handoffs to the coordinator. Its report replaces five independent PM-facing reports; its status aggregation does not erase specialist findings.
+- Compare delivered page content. Creative Name is supporting context, not a campaign-validation gate. Do not validate or use Creative ID, even if supplied in legacy inputs; keep tracking URL parameters unchanged.
 - For a standalone check, perform missing shared stages using the same defaults. Open tracking templates as supplied; placeholder presence alone is not a blocker. Never silently substitute click values.
 
+
+Creative Name is optional supporting context: a label difference alone must not block or change a page-content comparison.
 
 ## Objective and boundaries
 Find exact redemption codes, connect them to the correct offers, and report agreement or differences between paired pages.
@@ -24,24 +27,24 @@ Focus on advertised offer data and redemption instructions. Keep pricing compari
 
 Search text with or without a dollar symbol. Do not rely on pricing extraction to find codes. Do not invent missing codes or retrieve replacements from coupon sites.
 
-Accept URL pairs or rows containing Account, Vanity URL, Tracking template, Creative Name, and Creative ID. Preserve original row identities. If creative metadata is absent, use page evidence to define scope and disclose the missing metadata.
+Accept URL pairs or rows containing Account, Vanity URL, Tracking template, Position, and Creative Name. Preserve original row identities. If creative metadata is absent, use page evidence to define scope and disclose the missing metadata.
 
 ## Stage 1 — Establish row scope
 
 ### 1.1 Read the intended creative
 **Goal:** Identify the offer or experience each row is meant to validate.
-- Read the row's account, creative name, creative ID, and exact URL pair.
+- Read the row's account, position, creative name, and exact URL pair.
 - Treat names such as Homepage, Deals, and Customer Service as experience labels; do not assume they identify a single promotion.
 - Preserve original values and row numbers. Read the current source when a spreadsheet is supplied.
 **Output:** Row context and intended scope.
 
-### 1.2 Validate tracking identity
-**Goal:** Detect a link requesting a different creative.
-- Compare the listed Creative ID with the tracking URL's `c=` value.
-- Record a missing ID or discrepancy separately.
-- Preserve query parameters and placeholders. Do not silently correct the link.
-- Continue describing observable content, but do not verify the intended creative when its ID conflicts.
-**Output:** Creative validation result and any scope blocker.
+### 1.2 Preserve supplied URLs
+**Goal:** Check usable inputs without validating campaign identifiers.
+- Check missing or malformed URLs; preserve the exact tracking template and parameters.
+- Do not compare inventory metadata with tracking parameters or infer campaign identity.
+- Use Creative Name only as supporting context; compare actual delivered offers.
+- Do not repair links, substitute a root page, or switch to a better-matching URL.
+**Output:** URL-input issues and preserved navigation requests.
 
 ## Stage 2 — Capture and reuse evidence
 
@@ -60,7 +63,7 @@ Accept URL pairs or rows containing Account, Vanity URL, Tracking template, Crea
 - Reuse a capture only within the run when the exact input URL, capture settings, and required page/interaction state match.
 - Preserve the input URL in the key; do not merge different tracking links because they redirect to a similar destination.
 - Reuse extracted offer/code inventories from that capture.
-- Evaluate creative scope and tracking-ID validation separately for every row.
+- Evaluate creative scope and URL-input validation separately for every row.
 - Reuse a comparison conclusion only when both captures and intended scope are equivalent.
 **Output:** Capture references mapped to every original row.
 
@@ -81,7 +84,7 @@ Accept URL pairs or rows containing Account, Vanity URL, Tracking template, Crea
 **Goal:** Distinguish redemption codes from unrelated identifiers.
 - Require explicit redemption wording or clear presentation as a promo code.
 - Preserve capitalization, internal spaces, punctuation, and characters exactly. Remove only clearly external quote marks or delimiters.
-- Exclude creative IDs, URL tracking parameters, product models, account identifiers, and ordinary headings unless page evidence explicitly identifies them as redemption codes.
+- Exclude URL tracking parameters, product models, account identifiers, and ordinary headings unless page evidence explicitly identifies them as redemption codes.
 - Treat code-shaped strings without supporting evidence as unconfirmed candidates.
 - Flag unclear image characters such as O/0 or I/1; do not guess.
 **Output:** Confirmed codes and separately labeled uncertain candidates.
@@ -149,14 +152,14 @@ Compare available attempts. If advertised code content varies, preserve both obs
 | MISMATCH | Aligned offers have different, extra, one-sided, or differently advertised codes or redemption instructions. State the difference type. |
 | NO_CODE_FOUND | Neither page has a confirmed code after all required scoped checks complete. |
 | AMBIGUOUS | Code characters, candidate classification, or offer association cannot be resolved. |
-| INCOMPLETE | Required input, creative validation, offer alignment, capture, coverage, or stability remains unresolved. |
+| INCOMPLETE | Required input, offer alignment, capture, coverage, or stability remains unresolved. |
 
 Apply blockers before interpreting empty results. Retain observed mismatches even when another issue makes the overall row incomplete. A hidden-only reference may be reported, but cannot support an advertised MATCH.
 
 ### 7.2 Return concise, reviewable evidence
 **Goal:** Make each finding traceable to its row and offer.
 For each row, report:
-- Row identity, creative name/ID, and tracking-ID validation.
+- Row identity, creative name, and URL-input validation.
 - Supplied URLs, final destinations, and reused capture references.
 - Corresponding offer and exact code values on each side.
 - Exact redemption wording, short supporting quotes, and locations.
