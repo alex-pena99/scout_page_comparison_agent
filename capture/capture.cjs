@@ -119,7 +119,7 @@ async function measure(log, operation, fn, fields = {}) {
   finally { log.push({ operation, ...fields, at, offset_ms:start, elapsed_ms:performance.now()-start, outcome }); }
 }
 
-const dialogSelector = '.modal--active, .modal.show, [role=dialog][aria-modal=true], dialog[open]';
+const dialogSelector = '.modal--active, .modal.show, [role=dialog], dialog[open], [role=button][aria-label="Close modal"]';
 const dismissSelector = '[aria-label*="close" i], [aria-label*="dismiss" i], [data-dismiss="modal"], [data-bs-dismiss="modal"], .modal__close, .modal-close, .close';
 const transient = /timeout|ERR_CONNECTION_RESET|ERR_CONNECTION_CLOSED|ERR_CONNECTION_TIMED_OUT|ERR_NETWORK_CHANGED|HTTP 5\d\d/i;
 const readJson = async file => JSON.parse(await fs.readFile(file, 'utf8'));
@@ -177,8 +177,14 @@ async function dismiss(page, overlay, timeout) {
     const named = dialog.getByText('Close', {exact:true}).filter({visible:true});
     const hasBackdrop = await page.locator('.overlay').filter({visible:true}).count() > 0;
     const target = await close.count() === 1 ? close : named;
-    if (await target.count() !== 1) return false;
-    await target.click({timeout:timeout()});
+    if (await target.count() === 1) {
+      await target.click({timeout:timeout()});
+    } else if (await dialog.getAttribute('aria-label') === 'Close modal' &&
+        await dialog.getAttribute('role') === 'button') {
+      await dialog.click({position:{x:12,y:12},timeout:timeout()});
+    } else {
+      return false;
+    }
     await dialog.waitFor({state:'hidden',timeout:timeout()});
     if (hasBackdrop) {
       await page.waitForFunction(() => ![...document.querySelectorAll('.overlay')].some(el=>{
@@ -488,11 +494,11 @@ async function runEntry(browser, input, target, actions, output, job) {
           attempt.actions.push({id:action.id,reason:action.reason,outcome:'deadline',required:action.required!==false});
           continue;
         }
-        if (action.dependsOn && !attempt.actions.some(a=>a.id===action.dependsOn && ['captured','already-in-state'].includes(a.outcome))) {
+        if (action.dependsOn && !attempt.actions.some(a=>a.id===action.dependsOn && ['captured','already-in-state','equivalent-evidence'].includes(a.outcome))) {
           attempt.actions.push({id:action.id,reason:action.reason,outcome:'prerequisite-missing',required:action.required!==false});
           continue;
         }
-        const controlKey = action.selector || action.aria || action.label;
+        const controlKey = JSON.stringify([action.selector || action.aria || action.label,action.ordinal]);
         if (blocked.has(controlKey)) {
           attempt.actions.push({id:action.id,reason:action.reason,outcome:'unchanged-skipped',required:action.required!==false});
           continue;
