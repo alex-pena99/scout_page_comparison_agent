@@ -267,7 +267,7 @@ Group repeated evidence for readability while retaining each row's result. Keep 
 Confirm:
 - Every requested row has a result.
 - Reused captures retain separate creative contexts.
-- Incorrect comparisons and ID mismatches remain flagged.
+- Incorrect comparisons remain flagged.
 - Omissions, specificity differences, and uncertainty remain visible.
 - No requirement was borrowed from another offer.
 - Absence of wording was not treated as absence of eligibility restrictions.
