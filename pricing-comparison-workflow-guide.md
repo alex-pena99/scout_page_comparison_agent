@@ -10,6 +10,8 @@ description: Compare only displayed headline/offer-card prices, billing units, b
 
 Use [the master](coordinate-scout-audit/SKILL.md), [config](config/audit-config.json), and the selected validated saved batch/offer map. Read already captured primary headline/card and product-tab states; normal audits do not browse, click, or start Playwright. A recheck means inspecting saved evidence in that batch. Request a separate refresh for missing necessary headline states; never silently substitute older evidence. Report capture age/gaps through the master. Report scope/title: **Headline pricing and offer comparison**.
 
+Compare saved rendered text first; use screenshots only when needed to read primary offer information, such as an image-only price or an ambiguous extracted code. Do not compare layout or require separate desktop/mobile/tablet runs or cross-device parity. Missing mobile/tablet captures alone never cause Needs Review. Apple/Android product tabs, plan/speed/line selectors and other views remain in scope when they reveal different advertised products, prices or offers; these are product views within the same browser setting.
+
 Do not check eligibility, supporting requirements, disclosures, legal wording, redemption procedures, or administrative terms, including when excluded clauses appear inline. Never open terms, FAQs, or disclosure modals. Failed or missing supporting details are nonblocking. Never assume unreadable headline content matches. Preserve supplied URLs and capture security; ignore Creative ID and use Creative Name as context only.
 
 ## Stage 1 — Read primary prices

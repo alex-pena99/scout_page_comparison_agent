@@ -10,6 +10,10 @@ entry URLs share evidence while every CSV row keeps its original mapping.
 
 Normal Scout audits select a saved batch and read its evidence; they do not launch this pipeline or browse live pages. See [run.md](run.md) and [the coordinator](../coordinate-scout-audit/SKILL.md) for row mappings, age/coverage validation, refresh requests, and the implemented saved-batch importer/report commands. Playwright is used by standalone CLI code, not exposed here as an MCP tool or callable agent. A refresh is a separate authorized operation.
 
+## Browser setting and comparison use
+
+Use the existing single Chromium 1440 × 900 setting consistently for both URLs. The profile name is an implementation identifier, not a requirement to test desktop/mobile/tablet or compare responsive layouts. Apple/Android product tabs and other selectors remain relevant when they change advertised headline products, prices or offers. Scout reads saved rendered text first and uses images only when necessary primary information requires visual reading. Missing mobile/tablet captures alone are not coverage gaps. The packager’s remaining screenshot-availability gate is tracked in [run.md](run.md#runtime-follow-up); this documentation does not change it.
+
 ## Resources
 
 `config/capture-store.json` names the dedicated private captures store, project,

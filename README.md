@@ -28,6 +28,8 @@ Compare displayed headline/card prices and billing units; basic products/plans; 
 
 Exclude eligibility (even inline), detailed requirements, full disclosures, legal wording, redemption procedures, and administrative terms. Do not open terms, FAQs, supporting panels, or disclosure modals. Missing supporting details and failed disclosures are nonblocking. Never assume unreadable headline content matches.
 
+Browser-device testing (desktop/mobile/tablet), cross-device parity and layout comparison are outside scope. Keep the existing single Chromium setting consistent for both URLs. Apple/Android product tabs and plan/speed/line offer selectors remain in scope when headline offers differ. Compare saved rendered text first; screenshots are a fallback for necessary primary information. Missing mobile/tablet captures alone cannot cause Needs Review.
+
 ## Four active comparison guides
 
 | Active check | Guide |
@@ -54,6 +56,7 @@ Label every new report **Headline pricing and offer comparison**. Show batch ID,
 - [capture/storage.mjs](capture/storage.mjs) publishes immutable private batches, lists manifest paths, and retrieves checksum-verified evidence. [config/capture-store.json](config/capture-store.json) identifies the separate capture store and confirms scheduling is disabled.
 - [comparison/compare.py](comparison/compare.py) compares reviewed headline facts; [reporting/](reporting/) assembles, verifies, and privately publishes reports; [web/](web/) contains the protected viewer source.
 - [comparison/saved_captures.py](comparison/saved_captures.py) validates a selected stored batch and prepares the audit without browsing. Reports retain batch provenance, capture windows, timestamped evidence and manual refresh-handoff records. Scout reports relative evidence age and applies any requested age limit during review; no automatic freshness gate or refresh service is provided.
+- A remaining screenshot-availability gate in capture packaging is documented under [runtime follow-up](docs/run.md#runtime-follow-up). This documentation/config update does not change runner behavior or historical results.
 - The existing [completion handoff](docs/CAPTURE_HANDOFF_2026_11_19.md) records the first full stored batch and verified limits. It is historical evidence, not a default batch selection or a scheduler.
 
 Keep capture code/optimizations, the [CSV](data/scout-url-inventory.csv), [guarded pilot](config/pilot-config.json), exact supplied URLs, credential separation, TLS/authentication protections, and immutable history intact. Pipeline refresh and report publication are separate authorized operations. Never automatically relabel historical reports or silently substitute older evidence. No new automation or deployment is created by these documentation changes.

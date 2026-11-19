@@ -10,6 +10,10 @@ Maintained code now exists: [capture/capture.cjs](../capture/capture.cjs) implem
 
 The [dated completion handoff](../docs/CAPTURE_HANDOFF_2026_11_19.md) reports full-batch capture/upload verification, not comparison integration or scheduling. No recurring refresh, comparison-triggered submission, or retention/deletion schedule is enabled. Preserve implemented optimizations, existing limits, security, and history; this documentation update does not run capture or deploy changes.
 
+## Browser setting and product views
+
+Keep the existing single Chromium 1440 × 900 profile for both URLs; desktop/mobile/tablet testing, cross-device parity and layout comparison are outside scope. Do not add browser-device runs or request missing mobile/tablet evidence. Apple/Android product-family tabs and plan/speed/line selectors remain relevant when they expose different advertised products, prices or offers. Read captured rendered text first and use screenshots only for necessary primary information unavailable or ambiguous in text. Existing screenshot saving is evidence collection, not a requirement to inspect every image. The packaging screenshot gate still needs the [runtime follow-up](../docs/run.md#runtime-follow-up); these instructions do not change it.
+
 ## 1. Continuously filled queue
 **Goal:** Keep available capacity productive without increasing concurrency.
 
@@ -23,7 +27,7 @@ The [dated completion handoff](../docs/CAPTURE_HANDOFF_2026_11_19.md) reports fu
 **Goal:** Avoid repeating navigation, scrolling, and baseline artifacts.
 
 1. Open one isolated context for a unique entry and capture its baseline once.
-2. Determine relevant headline/product-tab views from that evidence. Select explicit device families rather than accepting whichever Wireless subtab opens first. Do not plan FAQ, terms, disclosure, eligibility, or supporting-detail actions.
+2. Determine relevant headline/product-tab views from that evidence. Select relevant Apple/Android product families rather than accepting whichever Wireless subtab opens first; do not change browser emulation or viewport. Do not plan FAQ, terms, disclosure, eligibility, or supporting-detail actions.
 3. Reuse the page/context through those interactions when practical. Retain context only within the original entry's workflow; never share campaign cookies between different entry URLs.
 4. Keep at most four live capture pages/contexts, including retained idle pages. Do not leave all 42 entries open. Release idle pages if holding them blocks ready work or the cumulative entry deadline expires.
 5. If a later agent decision arrives after release, reopen the original entry in a clean context. Restore only prerequisites needed to reach the missing state and capture that state.

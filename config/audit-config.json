@@ -284,14 +284,26 @@
       "commercial_correctness",
       "internal_consistency_investigations",
       "hidden_loaded_content_as_headline_offers",
-      "nonmaterial_formatting_and_layout"
+      "nonmaterial_formatting_and_layout",
+      "browser_device_testing_desktop_mobile_tablet",
+      "cross_device_parity",
+      "layout_comparison"
     ],
     "field_selection": "Extract in-scope primary fields rather than comparing raw full-card text; ignore excluded clauses even when adjacent.",
     "missing_supporting_details": "nonblocking_no_result_impact",
     "failed_disclosure_interactions": "nonblocking_no_followup_required",
     "unreadable_necessary_headline": "Needs Review unless an independent confirmed headline mismatch establishes Mismatch",
     "location_label_only": "nonblocking; compare observed headlines without ZIP entry",
-    "headline_offer_absence": "Mismatch only when absent from an identifiable corresponding readable page; unreadable content is not absence"
+    "headline_offer_absence": "Mismatch only when absent from an identifiable corresponding readable page; unreadable content is not absence",
+    "evidence_policy": {
+      "primary": "saved_rendered_headline_text",
+      "screenshots": "only when needed to read necessary primary offer information",
+      "browser_device_coverage_required": false,
+      "layout_comparison": false,
+      "missing_mobile_tablet_capture_alone": "nonblocking_no_result_impact",
+      "product_views": "Apple/Android product tabs and other offer selectors remain relevant when they reveal different advertised products, prices or offers",
+      "primary_views_coverage": "necessary product-offer headlines within the existing single browser setting, not browser-device variants"
+    }
   },
   "disabled_checks": {
     "advertised_requirements": "out_of_scope; skip as internal NOT_APPLICABLE, never a missing check or public blocker"
@@ -356,6 +368,13 @@
       "report_batch_provenance_and_capture_windows": "implemented; relative age and freshness assessment recorded by Scout in the delivered summary",
       "automatic_maximum_age_enforcement": "not implemented; review applies an explicit user/approved limit"
     },
-    "scope": "Existing comparison/checks/results rules remain unchanged. Workflow metadata documents the protocol; it does not implement freshness gates, scheduling or refresh submission."
+    "scope": "Existing comparison/checks/results rules remain unchanged. Workflow metadata documents the protocol; it does not implement freshness gates, scheduling or refresh submission.",
+    "browser_capture_policy": {
+      "setting": "existing single Chromium profile and viewport, consistent for both URLs",
+      "profile_id_is_implementation_detail": true,
+      "separate_browser_device_runs": false,
+      "cross_device_parity_required": false,
+      "runtime_note": "Documentation/reviewer policy only; does not change capture execution or automatically remove submitted gaps. See docs/run.md#runtime-follow-up."
+    }
   }
 }

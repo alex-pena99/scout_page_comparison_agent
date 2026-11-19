@@ -20,6 +20,12 @@ Exclude eligibility (including inline qualifications), detailed requirements, fu
 
 Preserve headline meaning such as "from," "up to," reward type, and monthly/per-line units. Ignore layout, duplicate UI copies, harmless formatting, and excluded clauses; do not require full-card literal equality. Requirements checking and Creative ID validation remain disabled; Creative Name is context only.
 
+## Browser setting and evidence
+
+Compare saved rendered text first; use screenshots only when needed to read primary offer information, such as an image-only price or an ambiguous extracted code. Do not compare layout or require separate desktop/mobile/tablet runs or cross-device parity. Missing mobile/tablet captures alone never cause Needs Review. Apple/Android product tabs, plan/speed/line selectors and other views remain in scope when they reveal different advertised products, prices or offers; these are product views within the same browser setting.
+
+Keep the existing Chromium 1440 × 900 setting consistent for both URLs as a capture implementation detail, not a desktop-testing deliverable. Keep the existing profile ID for compatibility. Missing or unreadable necessary product-view headlines remain legitimate gaps; a missing browser-device variant is not one.
+
 ## Sources
 
 Read this guide, [audit config](../config/audit-config.json), and the four active specialists from one recorded instruction commit:
@@ -59,8 +65,8 @@ Use [the CSV](../data/scout-url-inventory.csv) to establish the requested record
 1. Record comparison time, capture window, and age of the actual states used for each side. Prefer state capturedAt; label an entry timestamp fallback. Manifest createdAt is packaging time, not a substitute for page capture time.
 2. Apply a user-specified/approved maximum age when present. No universal freshness threshold is configured: report age and make the result explicitly "as captured," rather than claiming current live parity. Unknown timestamps mean unknown age, not fresh evidence.
 3. If the user requires current evidence, an approved limit is exceeded, age cannot satisfy the request, or necessary headline states are missing/unreadable, request a refresh through Stage 4. Keep affected comparisons unresolved unless a valid independent mismatch is already confirmed.
-4. Inspect saved rendered text, screenshots, state records, capture errors, and coverage notes. A captured entry or full-page screenshot alone does not prove every headline is readable. Standard ARIA tabs were captured; custom controls may need adapters. A cookie banner may obscure an image even when text exists.
-5. Record the implemented side-review coverage fields: banner (clear/obstructed/uncertain), primary_views (complete/incomplete/uncertain), and basis. These assess only necessary headline evidence. Use clear when saved text or another verified state supplies all affected facts; do not let an irrelevant banner create a gap.
+4. Read saved rendered text and state/coverage metadata first. Inspect screenshots only when necessary primary offer facts cannot be read reliably from text. A captured entry or full-page screenshot alone does not prove every headline is readable. Standard ARIA tabs were captured; custom controls may need adapters. A cookie banner may obscure an image even when text exists.
+5. Record the implemented side-review coverage fields: banner (clear/obstructed/uncertain), primary_views (complete/incomplete/uncertain), and basis. These assess only necessary headline evidence in the one browser setting, not responsive layout or a browser-device matrix. Mark primary_views complete when the required product offers are readable; missing mobile/tablet runs do not make it incomplete. Use clear when saved text or another verified state supplies all affected facts; do not let an irrelevant banner create a gap.
 6. Missing supporting terms, failed disclosures, and unconfirmed scrolling alone are nonblocking. Missing/unreadable necessary headline content is a real gap. A location label difference alone does not require a new market/ZIP capture; compare the observed headlines.
 
 # Stage 3 — Compare saved headline facts
@@ -106,7 +112,7 @@ Use comparison/saved_captures.py to prepare input.json from the selected verifie
 2. **Needs Review:** No confirmed mismatch establishes the result, and a page is unavailable, necessary headline content cannot be read, or no identifiable comparable offer exists. Missing inputs, incompatible mappings, or an unmet freshness requirement leave necessary evidence unavailable; explain which.
 3. **Match:** Headline prices and offers agree with readable, applicable saved evidence. State its capture age/window; this is not a live check.
 
-Supporting details/disclosure failures never block Match. An inactive requirements check is not incomplete. Identical excluded contradictions do not require interpretation. Never assume unreadable headlines match.
+Missing browser-device runs, layout differences, and screenshots unnecessary for reading primary facts never block Match. Supporting details/disclosure failures never block Match. An inactive requirements check is not incomplete. Identical excluded contradictions do not require interpretation. Never assume unreadable headlines match.
 
 # Stage 6 — Report
 
@@ -119,5 +125,7 @@ Use **Headline pricing and offer comparison** as the title. Show selected batch 
 | --- | --- | --- | --- | --- | --- | --- |
 
 Account for every requested record, including rows absent from the selected evidence. Reconcile counts and shared mappings. Give precise reasons, such as "Tracking headline unreadable in selected batch; refresh requested," not "terms unverified." Keep detailed age/provenance per side in evidence; do not use comparison/publication time as capture time.
+
+The current packager still requires at least one screenshot to mark an entry captured; see the runtime follow-up in docs/run.md. Report this as a pipeline limitation if encountered, not as a missing device test. Do not fabricate valid capture status or bypass verification.
 
 The report builder includes verified batch provenance and capture windows. Include relative age and any freshness assessment in the delivered summary; do not claim an automated age gate or relative-age viewer field exists. Publication is a separately authorized action. Preserve private storage/authentication, historical reports, and capture history. No scheduling or refresh automation is implied.

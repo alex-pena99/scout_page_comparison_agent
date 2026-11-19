@@ -30,6 +30,8 @@ Capture credentials are used only by the host process. Use the existing Developm
 
 Use the coordinator to inspect actual state evidence and align corresponding primary offers. This is the agent review step. The code compares the resulting structured facts and preserves one result per selected CSV row. No handbook, eligibility check or raw card-text comparison is needed. Retain qualifiers like `from` and `up to`, product identity, reward types, billing units and exact promo codes. Record displayed promotional durations only. Record necessary unreadable primary content explicitly. An optional failed action can be ignored if the necessary offer facts are already readable.
 
+Read saved rendered text first; inspect screenshots only when primary facts cannot be read reliably from text. Browser-device testing and layout comparison are outside scope. Apple/Android tabs and plan/speed/line selectors are product views in the same browser setting, not separate device tests. Missing mobile/tablet captures alone do not create a gap.
+
 Assess cookie banners and primary views on each available corresponding side. In `coverage`, record `banner` as `clear`, `obstructed` or `uncertain`, `primary_views` as `complete`, `incomplete` or `uncertain`, and a short `basis`. Use `clear` if no banner affects the necessary evidence, including when readable saved text resolves every affected primary field. A banner that obscures a necessary image or an uncaptured product state requires a gap. A saved baseline alone does not establish coverage of a family, speed or line selector.
 
 Create a private `reviews.json` keyed by `vanity-entry/tracking-entry`; use `missing` for an unavailable input slot. Reuse a review for the same exact pair. This synthetic example shows both sides for one corresponding offer:
@@ -66,7 +68,7 @@ python3 reporting/build.py "$SCOUT_RUN"
 node reporting/verify.mjs "$SCOUT_RUN/published"
 ```
 
-The builder rechecks the comparison against the evidence, packages a new report, and includes selected rows, captureSource provenance, batch and entry capture windows, timestamped screenshots and raw evidence archives. Include relative per-side age, profile, and freshness assessment in Scout’s delivered summary/private review log; these are not automatic freshness enforcement or relative-age viewer fields. The verifier renders it with the actual viewer code and checks each row, status, count and evidence filename/checksum. Spot-check headline facts against the referenced screenshots and captures before approving publication. Keep those notes private. Record agent planning/review, transfers, assembly and final verification as separate intervals in the private run log when measured. Capture wall time is first capture-task start through last task finish, including gaps; active time is the union of task intervals. End-to-end starts when the audit is accepted and ends after report verification. Mark unmeasured intervals as unknown.
+The builder rechecks the comparison against the evidence, packages a new report, and includes selected rows, captureSource provenance, batch and entry capture windows, timestamped screenshots and raw evidence archives. Include relative per-side age, profile, and freshness assessment in Scout’s delivered summary/private review log; these are not automatic freshness enforcement or relative-age viewer fields. The verifier renders it with the actual viewer code and checks each row, status, count and evidence filename/checksum. Spot-check headline facts against referenced rendered text and use screenshots only where primary facts require visual reading before approving publication. Keep those notes private. Record agent planning/review, transfers, assembly and final verification as separate intervals in the private run log when measured. Capture wall time is first capture-task start through last task finish, including gaps; active time is the union of task intervals. End-to-end starts when the audit is accepted and ends after report verification. Mark unmeasured intervals as unknown.
 
 ## Hand off refresh requests
 
@@ -83,7 +85,15 @@ node reporting/verify.mjs "$SCOUT_RUN/published" --signed-out
 
 The publisher checks signed-out protection, keeps existing Blob objects immutable, verifies private read-back checksums, and writes `report.json` last. It verifies signed-out protection again and records a local publication checkpoint. The stable path is `/reports/<audit-id>`. Retry with the same verified package to resume a partial upload. Use a new audit ID for any different report.
 
-Open the published link in an authorized browser, confirm the selected rows and totals, expand evidence panels, open screenshots and evidence links, and refresh/reopen the URL. Record authorized browser verification separately from the anonymous check. Private Blob is independent of the capture VM. These steps use the existing viewer and do not deploy anything.
+Open the published link in an authorized browser, confirm the selected rows and totals, expand evidence panels and verify evidence links (open screenshots only when primary facts require visual reading), and refresh/reopen the URL. Record authorized browser verification separately from the anonymous check. Private Blob is independent of the capture VM. These steps use the existing viewer and do not deploy anything.
+
+## Runtime follow-up
+
+The maintained runner already uses one Chromium viewport; no separate desktop/mobile/tablet loop or cross-device result gate was found. Keep `desktop-headline-offers-v1`, viewport, capture settings and provenance unchanged for saved-batch compatibility. `primary_views` in comparison/compare.py means necessary product-offer coverage, not browser-device coverage; it has no automatic device-test check. Scope/config wording guides the reviewer and does not filter arbitrary gap text at runtime.
+
+`capture/package-batch.mjs` still requires a readable state **with a screenshot** to mark an entry captured. A corresponding code change should allow a ready, usable rendered-text baseline without a PNG, retain a screenshot warning, and leave image-only necessary headline content unresolved. Coordinate this with comparison/saved_captures.py availability loading; preserve artifact checksums, provenance and genuine access/readability gaps. Test text-only Match, unreadable image Needs Review, genuine product-tab gaps, and missing/corrupt referenced artifact rejection before rollout. The runner still saves baseline/changed-state screenshots as evidence; this is not layout comparison and the comparison agent need not inspect each image. No runtime code is changed by this scope update.
+
+The reported full review of 7m 53s and 78 Needs Review has no reason-level artifact identified in this checkout. Do not attribute those counts to device testing or relabel results. Inspect that report’s row reasons and evidence separately before proposing result changes.
 
 ## Controlled checks
 
