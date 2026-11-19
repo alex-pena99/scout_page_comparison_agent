@@ -90,7 +90,8 @@ figcaption { margin-top: .35rem; font-size: .78rem; color: var(--muted); }
   table, tbody, .detail-row, .detail-row > td { display: block; }
   .result-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; border-top: 1px solid var(--edge); padding: .75rem; gap: .4rem .65rem; align-items: start; }
   .result-row:first-child { border-top: 0; }
-  .result-row > * { border: 0; padding: 0; width: auto; }
+  .result-row > * { border: 0; padding: 0; }
+  .result-row th, .result-row .result-cell { width: auto; }
   .result-cell { text-align: right; }
   .reason { grid-column: 1 / -1; }
   .toggle-cell { grid-column: 1 / -1; text-align: left; }
