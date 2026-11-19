@@ -27,8 +27,9 @@ test('continuous queue, actionability, scoped capture, isolation and verified re
         <button id="details" onclick="this.after(' Broad bundle offer for eligible customers')">See details</button>
         <button id="extra" onclick="this.after(' Additional disclosure with AutoPay')">Extra offer details</button>
         <button id="special" onclick="this.after(' Special offer at $20 per line')">Special price</button>
+        ${name==='overlay' ? '<div class="overlay" style="position:fixed;inset:0"></div>' : ''}
         ${name==='overlay' || name==='blocked' ? `<div class="modal--active" role="dialog" aria-modal="true" style="position:fixed;inset:0;background:white">
-          ${name==='overlay' ? '<button aria-label="Close modal" onclick="this.parentElement.remove()">Close</button>' : 'No access to underlying control'}
+          ${name==='overlay' ? '<button aria-label="Close modal" onclick="this.parentElement.remove();setTimeout(()=>document.querySelector(&quot;.overlay&quot;).remove(),150)">Close</button>' : 'No access to underlying control'}
         </div>` : ''}
         </main><script>
         if(location.pathname==='/blocked') window.scrollTo=()=>{};

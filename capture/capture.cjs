@@ -73,6 +73,8 @@ async function controls(page) {
         tag: el.tagName, role: el.getAttribute('role'), type: el.getAttribute('type'),
         href: el.getAttribute('href'), aria: el.getAttribute('aria-label'), expanded: el.getAttribute('aria-expanded'),
         target: el.getAttribute('aria-controls') || el.getAttribute('data-bs-target') || el.getAttribute('data-target'),
+        selected:el.getAttribute('aria-selected') || el.getAttribute('aria-pressed') || el.getAttribute('data-state'),
+        className:String(el.className),
         text: (el.innerText || el.textContent || el.getAttribute('aria-label') || '').trim().replace(/\s+/g, ' '),
       })).filter(el => el.text || el.aria)
   );
@@ -173,10 +175,17 @@ async function dismiss(page, overlay, timeout) {
   if (await dialog.count() === 1) {
     const close = dialog.locator(dismissSelector).filter({visible:true});
     const named = dialog.getByText('Close', {exact:true}).filter({visible:true});
+    const hasBackdrop = await page.locator('.overlay').filter({visible:true}).count() > 0;
     const target = await close.count() === 1 ? close : named;
     if (await target.count() !== 1) return false;
     await target.click({timeout:timeout()});
     await dialog.waitFor({state:'hidden',timeout:timeout()});
+    if (hasBackdrop) {
+      await page.waitForFunction(() => ![...document.querySelectorAll('.overlay')].some(el=>{
+        const style = getComputedStyle(el);
+        return !!el.getClientRects().length && style.visibility === 'visible' && style.pointerEvents !== 'none';
+      }),null,{timeout:timeout()});
+    }
     return true;
   }
   // The known consent overlay is dismissed through its offered button.
@@ -194,7 +203,7 @@ async function verifyState(page, action, before, timeout) {
   const expected = action.expected || {};
   await page.waitForFunction(({expected, before, selectedLabel, selectedSelector}) => {
     const visible = el => !!el.getClientRects().length && getComputedStyle(el).visibility === 'visible';
-    const normalized = text => text.replace(/[\u200b\u00ad]/g,'').replace(/\s+/g,' ').trim();
+    const normalized = text => (text || '').replace(/[\u200b\u00ad]/g,'').replace(/\s+/g,' ').trim();
     const text = normalized(document.body?.innerText || '');
     const scope = expected.scope ? [...document.querySelectorAll(expected.scope)].filter(visible)
       .map(el=>normalized(el.innerText)).join(' ') : text;
@@ -600,7 +609,9 @@ if (require.main===module) (async()=>{
   const [inputPath,planPath,output,reopen] = process.argv.slice(2);
   if (!output) throw new Error('Usage: node capture.cjs INPUT.json OFFER_PLAN.json OUTPUT [--reopen]');
   const input = await readJson(inputPath);
-  input.runner_revision ||= 'sha256:'+digest(await fs.readFile(__filename));
+  const revision = 'sha256:'+digest(await fs.readFile(__filename));
+  if (input.runner_revision && input.runner_revision !== revision) throw new Error('Runner content hash disagrees with audit input');
+  input.runner_revision = revision;
   await run(input,output,await readJson(planPath),{reopen:reopen==='--reopen'});
 })().catch(error=>{console.error(error);process.exitCode=1;});
 
