@@ -1,130 +1,123 @@
 ---
 name: coordinate-scout-audit
-description: Scout's master workflow for headline pricing and offer comparison between supplied vanity and tracking pages. Compare displayed prices/units, basic products/plans, headline savings/rewards/benefits/codes, and promotional durations directly in headlines or offer cards. Exclude all eligibility, terms, disclosures, FAQs, and administrative procedures.
+description: Select and validate a saved private Scout capture batch, compare headline prices and offers from its evidence, and report Match, Mismatch, or Needs Review. Preserve source rows, capture age and coverage gaps. Normal audits do not browse; request a separate capture refresh when required.
 ---
 
 # Scout — Headline pricing and offer comparison
 
-## Scope and authority
+## Two responsibilities
 
-Compare ONLY the headline offer presented on each supplied page:
-- Displayed prices and billing units.
-- Basic product or plan names.
-- Headline savings, rewards, discounts, benefits, and promo codes.
-- Promotional durations stated directly in the headline or offer card.
+1. **Standalone capture pipeline:** maintained Playwright/Chromium code loads the inventory and stores screenshots, rendered text, timestamps, and failures in private Vercel Blob. See [capture pipeline](../docs/capture-pipeline.md).
+2. **Scout comparison workflow:** select one saved capture batch, validate its evidence, compare headline facts, and produce the report. Normal audits do not navigate campaign pages, click tabs, run Chromium, or start capture jobs.
 
-Read primary offer text/cards, including headline offers farther down the rendered page and relevant product tabs. This is not limited to the first viewport. A headline guarantee such as "60-day money-back guarantee" is an advertised benefit/duration; its detailed terms are not part of the comparison.
+Playwright is the pipeline's browser automation library, not a remotely callable agent or MCP service. The implemented interface is the host CLI; do not invent a capture/refresh tool. Saved-batch import, comparison, report assembly, and manual refresh-handoff records are implemented. Scheduling and automatic refresh submission are not enabled. Follow the real interfaces and limitations in [docs/run.md](../docs/run.md).
 
-Do not check eligibility, bundles/trade-in/AutoPay qualifications, full disclosures, legal wording, detailed requirements, redemption procedures, or administrative terms, even if such conditions appear beside the price. Do not open terms, FAQs, disclosure modals, or supporting-detail panels to complete an offer. Do not investigate commercial correctness or internal consistency. Hidden-loaded references are not headline offers.
+## Headline-only scope — unchanged
 
-This scope overrides older guides and runtime defaults. Missing supporting details and failed disclosure interactions cannot block Match. Never assume unreadable headline text matches. Preserve meaningful headline modifiers such as "from," "up to," the reward type, and per-month/per-line billing units; ignore eligibility clauses rather than making full-card literal text equality a requirement.
+Compare only displayed headline/offer-card prices and billing units; basic product/plan names; headline savings, rewards, discounts, benefits, and promo codes; and promotional durations directly in the headline/card. Use saved primary offer states across the page and captured relevant product tabs, not just the first viewport.
 
-## Repository sources
+Exclude eligibility (including inline qualifications), detailed requirements, full disclosures, legal wording, redemption procedures, and administrative terms. Do not open terms, FAQs, supporting panels, or disclosure modals. Hidden-loaded text is not a headline offer. Missing supporting details and failed disclosure interactions are nonblocking. Never assume unreadable headline content matches.
 
-| Source | Path |
-| --- | --- |
-| Inventory | [data/scout-url-inventory.csv](../data/scout-url-inventory.csv) |
-| Capture defaults | [config/audit-config.json](../config/audit-config.json) |
-| Capture execution | [references/capture-execution.md](../references/capture-execution.md) |
-| Explicit development pilot | [config/pilot-config.json](../config/pilot-config.json) |
-| Headline pricing | [pricing-comparison-workflow-guide.md](../pricing-comparison-workflow-guide.md) |
-| Headline promo codes | [compare-promo-codes.SKILL.md](../compare-promo-codes.SKILL.md) |
-| Headline benefits | [compare-benefits-inclusions.SKILL.md](../compare-benefits-inclusions.SKILL.md) |
-| Direct promotional durations | [compare-dates-durations.SKILL.md](../compare-dates-durations.SKILL.md) |
+Preserve headline meaning such as "from," "up to," reward type, and monthly/per-line units. Ignore layout, duplicate UI copies, harmless formatting, and excluded clauses; do not require full-card literal equality. Requirements checking and Creative ID validation remain disabled; Creative Name is context only.
 
-The legacy [requirements guide](../compare-advertised-requirements.SKILL.md) is disabled for this workflow. Do not run it or require its completion. There are four active checks, not five.
+## Sources
 
-# Stage 1 — Start and preserve inputs
+Read this guide, [audit config](../config/audit-config.json), and the four active specialists from one recorded instruction commit:
+- [Pricing](../pricing-comparison-workflow-guide.md)
+- [Promo codes](../compare-promo-codes.SKILL.md)
+- [Benefits](../compare-benefits-inclusions.SKILL.md)
+- [Durations](../compare-dates-durations.SKILL.md)
 
-## 1.1 Load the requested audit
-**Goal:** Establish reproducible scope and keep every requested record.
+Use [the CSV](../data/scout-url-inventory.csv) to establish the requested records and [pilot guards](../config/pilot-config.json) only for an explicit pilot. Capture provenance may legitimately reference an older instruction/runner/inventory revision; record it separately from the comparison instruction revision. Never rewrite provenance to make a batch compatible.
 
-1. Read this guide, config, active specialists, and inventory from one recorded commit.
-2. Use all inventory records unless the user supplies a filter. Preserve source rows, including duplicate mappings; header is CSV row 1.
-3. For an explicit pilot, verify its pinned inventory/hash and exact selection. Abort invalid selection before comparison; never fall back to all records. Record both instruction and pilot-inventory revisions.
-4. Preserve Account, Vanity URL, Tracking URL, Position, and Creative Name. Ignore Creative ID in legacy inputs. Creative Name is context, not a result gate.
-5. Record audit ID, timestamps, instruction/runner revisions, config version, and report scope. Label every new report exactly **Headline pricing and offer comparison**.
+# Stage 1 — Select the batch
 
-## 1.2 Prepare navigation
-**Goal:** Compare supplied experiences without repairing campaign routing.
+## 1.1 Establish requested records and evidence source
+**Goal:** Know exactly what the PM wants compared and which saved evidence will be used.
 
-Preserve original URLs and every parameter, including c=, placeholders, and query order. For navigation only, trim surrounding whitespace, add https:// when absent, permit browser encoding, and follow normal redirects. Never invent click values or replace {lpurl}. A placeholder alone is not an error. Missing/unusable inputs require review, not a substitute landing page.
+1. Preserve the supplied record filter; without one, the requested scope is the full inventory, not merely every row in an arbitrary small batch.
+2. Use the user's explicit batch ID or an explicitly configured selection. If none is supplied, inspect authorized batch manifests and obtain/record a compatible selection; ask for the missing choice when needed. Do not silently choose the newest name, an older fallback, or a later smoke test.
+3. For "latest," select the latest eligible batch covering the requested records/profile after inspecting manifests, and disclose the exact choice. A later two-URL smoke batch does not replace a full batch.
+4. Assign a separate comparison/report ID and record the selected capture batch ID, manifest path, requested rows, and selection reason. Do not reuse a capture ID to overwrite a prior report.
 
-# Stage 2 — Retrieve saved headline evidence
+# Stage 2 — Validate saved evidence
 
-1. Follow the [audit runbook](../docs/run.md) and retrieve the explicitly named batch through the private capture-store client. Confirm its CSV mappings, capture profile, timestamps and suitability for the requested records. Keep capture and report credentials separate.
-2. Review the saved screenshot, rendered text and capture metadata for each corresponding primary offer. Check cookie banners, rendered image text and selected product/device/speed/line views. A baseline can be adequate when it covers all necessary facts. A cookie banner only blocks comparison when it obscures necessary evidence that the saved text or another verified state cannot supply. Hidden content does not establish headline parity.
-3. Record banner and primary-view coverage in the side review. Preserve an unavailable page or a necessary unreadable or uncaptured headline as Needs Review unless an independent confirmed difference establishes Mismatch. Redundant or excluded supporting details do not block agreement.
-4. Use the capture refresh handoff for necessary gaps. Identify the original entry, required state and affected rows and request a new capture from the separate pipeline operator. Scout does not open live URLs or dispatch a capture job. Use a new, explicitly selected batch when it is ready. Persist current evidence and decisions without editing historical batches.
+## 2.1 Verify manifest, provenance, and row mappings
+**Goal:** Ensure that the selected batch actually represents the requested URL pairs.
 
-A location label alone does not block readable headline comparison. An unconfirmed page bottom alone is not a blocker.
+1. Use authorized private storage retrieval. Require a completed manifest with matching batchId, kind page-capture-batch, and supported schema. A finished_with_gaps batch is usable evidence, not proof that all comparisons can complete.
+2. Verify downloaded file checksums/sizes using the maintained storage CLI. Stop using corrupt or mismatched artifacts; do not replace them with older files silently.
+3. Check inventory revision/hash, selected records, original/prepared URLs, vanity/tracking entry keys, region/profile, timestamps, and capture failures. Use inventory.json for original full row/target records; manifest selectedRows is a count, not a selection list.
+4. Match requested records against exact source values and mappings, not row numbers alone. If the inventory changed, identify the difference and obtain a compatible batch or explicit historical scope; never compare a stale URL under a current row label.
+5. Prepare the private audit with comparison/saved_captures.py as documented in docs/run.md. It validates the complete source mapping, inventory and runner hashes, capture settings, selected rows, and saved artifacts; a small batch cannot supply a full audit. Stop on validation failure rather than fabricating input.json.
+6. Preserve all original rows and duplicate mappings. Reuse equivalent saved pair evidence, not another row's unrelated offer conclusion.
+7. Do not mutate supplied URLs, remove parameters, substitute destinations, or validate Creative IDs. Keep stored redirects/failures and missing input slots visible.
 
-# Stage 3 — Compare four headline fields
+## 2.2 Assess age and headline coverage
+**Goal:** Make evidence age and limitations explicit before interpreting parity.
 
-## 3.1 Establish correspondence
-**Goal:** Compare recognizable headline experiences and detect changed/absent offers.
+1. Record comparison time, capture window, and age of the actual states used for each side. Prefer state capturedAt; label an entry timestamp fallback. Manifest createdAt is packaging time, not a substitute for page capture time.
+2. Apply a user-specified/approved maximum age when present. No universal freshness threshold is configured: report age and make the result explicitly "as captured," rather than claiming current live parity. Unknown timestamps mean unknown age, not fresh evidence.
+3. If the user requires current evidence, an approved limit is exceeded, age cannot satisfy the request, or necessary headline states are missing/unreadable, request a refresh through Stage 4. Keep affected comparisons unresolved unless a valid independent mismatch is already confirmed.
+4. Inspect saved rendered text, screenshots, state records, capture errors, and coverage notes. A captured entry or full-page screenshot alone does not prove every headline is readable. Standard ARIA tabs were captured; custom controls may need adapters. A cookie banner may obscure an image even when text exists.
+5. Record the implemented side-review coverage fields: banner (clear/obstructed/uncertain), primary_views (complete/incomplete/uncertain), and basis. These assess only necessary headline evidence. Use clear when saved text or another verified state supplies all affected facts; do not let an irrelevant banner create a gap.
+6. Missing supporting terms, failed disclosures, and unconfirmed scrolling alone are nonblocking. Missing/unreadable necessary headline content is a real gap. A location label difference alone does not require a new market/ZIP capture; compare the observed headlines.
 
-Use readable product/plan names, provider, headline purpose, and surrounding primary offer context. Do not require eligibility or disclosure evidence to establish correspondence. Layout, card order, and row labels alone are not deal differences.
+# Stage 3 — Compare saved headline facts
 
-Within a corresponding readable offer page/catalog, compare headline records and verify apparent omissions against its primary offers/tabs. A confirmed advertised offer missing from that readable counterpart is Mismatch. A clearly changed product in an identifiable corresponding headline offer is also Mismatch; do not force equal prices onto different products.
+## 3.1 Align offers and apply four checks
+**Goal:** Compare recognizable primary offers using only the selected batch.
 
-Use Needs Review when no comparable offer or experience can be identified, such as sales versus unrelated support/default blog content. A blocked or unreadable headline is not a confirmed absence.
+Use basic product/plan, provider, headline purpose, and primary offer context to align records. A changed product in an identifiable corresponding headline can be Mismatch; equal amounts alone do not establish correspondence. Unrelated support/default pages with no comparable offer require review.
 
-## 3.2 Apply active specialists to shared evidence
-**Goal:** Complete the requested comparison without supporting-term investigations.
+Apply Pricing to displayed values/units, Promo Codes to exact displayed codes, Benefits to headline rewards/inclusions, and Durations to directly stated promotional timing. Reuse the same saved states and offer map. "60-day money-back guarantee" can agree without reading its detailed terms. Eligibility differences do not affect this workflow.
 
-| Check | Compare |
-| --- | --- |
-| Pricing | Displayed headline/card prices and billing units, associated basic product/plan, headline savings/reward/discount amounts. |
-| Promo codes | Exact codes advertised in primary headline/card content; no redemption procedures. |
-| Benefits | Headline rewards, devices, included benefits, discounts, and guarantees; no guarantee/eligibility terms. |
-| Dates | Promotional duration/date range stated directly in a headline or offer card; no supporting timelines. |
+Preserve exact primary quotes/images and canonical fields. A recheck means reviewing another already-saved state in the same batch, not browsing or clicking. If needed evidence was never captured, use Stage 4. Do not fill holes from a different batch without explicit source selection and per-side provenance; default to one selected batch.
 
-Reuse shared captures and the same offer map. References are handoffs, not recursive audits. Preserve exact quotes and extract only in-scope fields; ignore excluded clauses even when the raw passage includes them. Do not compare eligibility, including inline eligibility. Retain headline product identity and units without validating who qualifies.
+## 3.2 Distinguish absence from unreadability
+**Goal:** Detect missing offers without guessing unseen content.
 
-Use the manual capture refresh handoff for an uncertain headline value or apparent absence when needed. Continue independent checks after a difference. Unstated optional codes/durations do not need to be supplied or verified. Identical ambiguity/conflicting supporting text does not require commercial interpretation when headline agreement is readable.
+An advertised headline offer confirmed absent from its corresponding readable captured page/catalog is Mismatch. An unreadable/missing primary state is not confirmed absence. No displayed code or duration on either readable counterpart is acceptable; do not demand optional fields or requirements.
 
-# Stage 4 — Save and decide
+# Stage 4 — Request refreshes separately
 
-## 4.1 Save traceable evidence
-**Goal:** Preserve supported results without changing history.
+## 4.1 Describe the missing capture
+**Goal:** Obtain necessary evidence without covert live browsing or unsupported automation.
 
-Checkpoint captures and comparisons through configured durable storage. Retain original records, exact URLs, instruction/runner versions, selected headline views, extracted fields, supporting quotes/images, operation timings, and necessary headline gaps. Keep incidental warnings separate. Resume only compatible work. Disclose saving failures as operational issues, not website mismatches.
+Record batch ID, exact affected source rows/URLs and roles, relevant product/tab state, missing headline field, reason (age, failure, inventory change, or unreadability), and requested freshness if specified. Send the request to the authorized pipeline operator/user through the available task interface. A written refresh request is not a submitted job; do not invent a job ID, polling tool, or schedule.
 
-Never rewrite historical reports or relabel prior results automatically. A separately requested reassessment creates a new report/version, identifies its evidence date and new scope, and preserves the original.
+Continue independent comparisons from valid evidence. If a refresh is not available, report the affected records as Needs Review with a specific reason; never assume a match. Run the separate capture CLI only as a separately authorized capture task, not as a normal comparison step. Pipeline execution follows [capture-execution.md](../references/capture-execution.md).
 
-## 4.2 Assign one result per record
-**Goal:** Apply the PM's three results only to headline prices and offers.
+When a replacement batch is delivered, validate it from Stage 1 and record the explicit switch and affected rows. Preserve the earlier batch/report. Never silently substitute older evidence for failed fresh captures. The maintained importer supports one batch per audit. Do not mix batches or manually merge evidence into its verified layout; select a replacement compatible batch instead.
 
-1. **Mismatch:** A confirmed headline price or offer differs, or an advertised offer is absent from its corresponding readable page. Mention any additional unreadable headline content without hiding the confirmed difference.
-2. **Needs Review:** No confirmed mismatch establishes the result, and a page is unavailable, necessary headline content cannot be read, or there is no identifiable comparable offer. Include missing/unusable input URLs here.
-3. **Match:** Headline prices and offers agree, with readable evidence for the necessary headline fields.
+# Stage 5 — Save and decide
 
-Missing supporting terms, failed disclosures, eligibility differences, legal wording, and administrative detail never change these results. A disabled requirements check is not incomplete. No displayed code or duration on either readable counterpart is acceptable. Never assume unreadable headline content matches.
+## 5.1 Preserve traceability
+**Goal:** Keep comparison conclusions tied to immutable capture evidence.
 
-| Example | Result |
-| --- | --- |
-| Same headline prices/rewards; both disclosure buttons fail | Match |
-| Same headline prices; AutoPay/trade-in eligibility wording differs | Match if other headline facts agree |
-| $35/month versus $45/month, or per month versus per year | Mismatch |
-| $100 reward versus $200 reward, or one headline code differs | Mismatch |
-| Readable corresponding catalog omits a headline reward offer | Mismatch |
-| Same "60-day money-back guarantee"; detailed guarantee terms unavailable | Match if other headline facts agree |
-| A primary price image is unreadable after the bounded recheck | Needs Review |
-| Tracking cannot render or leads to unrelated support | Needs Review |
+Save comparison ID/instruction revision, selected batch/manifest, capture runner/inventory provenance, comparison time, per-side capture times/ages, original row/URL mappings, reviewed states, headline facts, and specific gaps/refresh requests. Store privately and separately from immutable capture objects. Resume only compatible work; no historical report relabeling.
 
-# Stage 5 — Report
+Use comparison/saved_captures.py to prepare input.json from the selected verified batch, then comparison/compare.py and reporting/build.py as documented in docs/run.md. The report carries captureSource, capture windows and timestamped evidence; necessary coverage gaps produce a manual Capture refresh handoff document. These commands do not browse or submit refresh jobs. Relative per-side age and any freshness policy assessment must also be recorded in Scout's delivered summary/private review log; the current CLI has no maximum-age enforcement option.
 
-## 5.1 Reconcile and deliver
-**Goal:** Return a complete, simple headline comparison.
+## 5.2 Assign the unchanged public result
+**Goal:** Apply only the PM's headline comparison definitions.
 
-Verify one result for every selected record and reconcile counts. Every active check must have a readable in-scope outcome or a specific necessary gap; a completed search finding no optional field is sufficient. Do not demand a fifth requirements result.
+1. **Mismatch:** A headline price or offer differs, or an advertised offer is absent from the corresponding readable page. Mention additional necessary evidence gaps.
+2. **Needs Review:** No confirmed mismatch establishes the result, and a page is unavailable, necessary headline content cannot be read, or no identifiable comparable offer exists. Missing inputs, incompatible mappings, or an unmet freshness requirement leave necessary evidence unavailable; explain which.
+3. **Match:** Headline prices and offers agree with readable, applicable saved evidence. State its capture age/window; this is not a live check.
 
-Use the report title **Headline pricing and offer comparison**, then counts and:
+Supporting details/disclosure failures never block Match. An inactive requirements check is not incomplete. Identical excluded contradictions do not require interpretation. Never assume unreadable headlines match.
+
+# Stage 6 — Report
+
+## 6.1 Reconcile and deliver
+**Goal:** Give the PM a complete simple result list with honest evidence provenance.
+
+Use **Headline pricing and offer comparison** as the title. Show selected batch ID, capture window/age, comparison time, profile, and a short coverage/freshness note, followed by counts and:
 
 | Row | Account | Creative | Vanity URL | Tracking URL | Result | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
 
-Keep reasons specific: "$35/mo versus $45/mo," "Headline reward absent," or "Tracking price card unreadable." Do not use "eligibility unverified" or "disclosure blocked" as blockers. Keep technical evidence available without flooding the PM list. Label interrupted runs partial and account for unprocessed records as Needs Review.
+Account for every requested record, including rows absent from the selected evidence. Reconcile counts and shared mappings. Give precise reasons, such as "Tracking headline unreadable in selected batch; refresh requested," not "terms unverified." Keep detailed age/provenance per side in evidence; do not use comparison/publication time as capture time.
 
-Match means headline parity in the completed desktop view, not complete terms, commercial correctness, all-market coverage, or customer eligibility.
+The report builder includes verified batch provenance and capture windows. Include relative age and any freshness assessment in the delivered summary; do not claim an automated age gate or relative-age viewer field exists. Publication is a separately authorized action. Preserve private storage/authentication, historical reports, and capture history. No scheduling or refresh automation is implied.

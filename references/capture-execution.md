@@ -2,11 +2,13 @@
 
 Implementation contract for the capture runner. Read with the [master guide](../coordinate-scout-audit/SKILL.md) and [audit config](../config/audit-config.json). Report scope/title: **Headline pricing and offer comparison**. Only primary headline/card content and relevant product tabs are in scope. Eligibility, requirements, terms, FAQs, disclosure modals, redemption procedures, and administration are excluded. Never open supporting details to complete an offer.
 
-## Integration status
+## Responsibility and implemented interface
 
-The existing sandbox run used capture.cjs, but that source is not currently checked into this repository. The settings below describe required behavior, not proof of a deployed implementation. Obtain the actual runner and its dependencies, put them in a maintained code location, and modify that implementation rather than recreating it from audit prose. Record its repository/revision, or a content hash for an uncommitted runner.
+This reference is for the **separate standalone capture pipeline**, not the normal Scout comparison audit. Scout consumes a selected saved batch and requests a refresh when needed; it does not invoke browser actions during comparison. See [run.md](../docs/run.md) for selection, row validation, age, and the current batch-to-report integration boundary.
 
-Keep the existing browser settings, timeouts, continuously filled four-worker queue, bounded page reuse, cumulative entry budget, shared retry/recheck limits, and operation telemetry. Use config version 5 and four active headline checks; disable requirements and remove old report gates for supporting terms. This is not permission to force-click disabled controls or bypass certificates/access controls.
+Maintained code now exists: [capture/capture.cjs](../capture/capture.cjs) implements browser execution; [batch.cjs](../capture/batch.cjs) enables standalone headline tabs; [run-remote.mjs](../capture/run-remote.mjs) is the authorized host CLI; [package-batch.mjs](../capture/package-batch.mjs) and [storage.mjs](../capture/storage.mjs) package and store immutable private batches. See [capture-pipeline.md](../docs/capture-pipeline.md) for real commands and credentials. Playwright is an automation library, not an MCP/callable agent interface here.
+
+The [dated completion handoff](../docs/CAPTURE_HANDOFF_2026_11_19.md) reports full-batch capture/upload verification, not comparison integration or scheduling. No recurring refresh, comparison-triggered submission, or retention/deletion schedule is enabled. Preserve implemented optimizations, existing limits, security, and history; this documentation update does not run capture or deploy changes.
 
 ## 1. Continuously filled queue
 **Goal:** Keep available capacity productive without increasing concurrency.
@@ -86,19 +88,14 @@ Obtain the exact 25-record input/selection manifest and inventory version from t
 
 Compare capture wall time, end-to-end time, repeated visits/baselines, failed/skipped interactions, and required offer-state coverage. Explain every verdict change using evidence: content changed, an earlier gap was resolved, or prior coverage was overstated. Preserve earlier reports/evidence. A faster run with lower necessary headline coverage is not a proven equivalent-work speedup. A broader historical audit has a different scope; do not describe the new headline-only run as equivalent work unless comparable headline coverage is established. Preserve history; never automatically relabel previous reports.
 
-## 7. Sandbox implementation handoff
-**Goal:** Apply the scope in real capture and report code, not just Markdown.
+## 7. Saved-batch handoff
+**Goal:** Keep capture and comparison responsibilities separate.
 
-No maintained runner/report implementation is present in this repository. The sandbox session must update its actual capture.cjs, interaction planner, comparison aggregation, and report builder to:
-- Read config version 5 and only its four active checks; skip legacy requirements as internal NOT_APPLICABLE, never a missing required check.
-- Drop queued eligibility/terms/FAQ/disclosure tasks from old plans; do not execute them on resume.
-- Extract primary headline/card fields rather than full disclosure/card-string equality. Ignore excluded qualification clauses even if inline.
-- Keep the existing queue, context reuse, timings, deadlines, retries, security, and exact supplied URLs.
-- Apply the three headline-only status rules, including Mismatch for a confirmed absent offer on a corresponding readable page; never infer a match from unreadable headlines.
-- Label every new HTML report, exported report, and report metadata **Headline pricing and offer comparison**. Keep separate operational notes and necessary headline gaps.
-- Preserve CSV/pilot inputs and all historical reports/evidence; never batch-relabel old results. Create a new version only for an explicitly requested reassessment.
+The pipeline publishes captures/BATCH_ID/manifest.json last after file verification. It records original row/entry mappings, provenance, timestamps, states, and failures; comparisonPerformed is false. Normal Scout audits select/validate this saved evidence and report its actual age and headline gaps. A finished batch does not assert complete headline coverage or a Match.
 
-Record instruction/runner revisions and validate these changes in that maintained implementation. This repository update does not claim the sandbox runtime has changed.
+Never silently replace failed fresh evidence with older files. A refresh request must identify exact affected rows/URLs/roles, necessary headline state, age/coverage reason, and desired freshness; it is not an automatic pipeline invocation. A separately authorized operator executes the documented CLI and returns a new batch ID, which Scout must revalidate.
+
+Stored evidence retrieval and comparison/saved_captures.py import are implemented; see docs/run.md. The importer validates one immutable batch and prepares a distinct audit. Report assembly retains batch provenance, capture windows, and manual coverage-refresh requests. Scout separately reports relative age and applies any requested freshness limit during review; no automatic age gate or refresh submission is implemented. Do not overwrite source checkpoints or fabricate provenance. Preserve headline-only rules.
 
 ## 8. Runner acceptance checks
 **Goal:** Verify implementation before the live benchmark.
@@ -117,4 +114,4 @@ Use controlled fixtures to show:
 - Same "60-day money-back guarantee" headlines compare without accessing guarantee terms; directly stated promotional duration differences remain detectable.
 - Every new report carries the exact headline-comparison label, and no historical report or CSV changes.
 
-These are implementation checks, not claims that this repository already contains or has tested the runner. Complete them in the maintained runner location, then rerun the exact prior selection.
+Run maintained controlled tests for code changes and keep live verification distinct. The completion handoff records prior tests; this reference alone does not establish a new benchmark. Preserve any earlier reports and compare capture age/scope before claiming equivalent work.
