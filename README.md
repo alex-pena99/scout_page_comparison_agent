@@ -30,6 +30,8 @@ This is **cross-page parity**, not a legal audit or certification of commercial 
 
 ## Capture only what the comparison needs
 
+Run the [maintained Playwright capture runner](capture/README.md) with the pinned audit input and offer plan.
+
 Read the rendered page and distinct offer-bearing views, scrolling as needed. Open details, panels, FAQs, or frames when their context suggests additional offers or they are needed to understand a material price/offer fact. Reuse sufficient equivalent evidence instead of requiring every redundant panel to open.
 
 A timeout alone is not a reason for Needs Review. Classify it:
