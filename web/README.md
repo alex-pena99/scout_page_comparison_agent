@@ -12,7 +12,7 @@ Run `npm ci` and `npm run check` before deploying source changes. The viewer use
 
 Place the completed audit's presentation JSON at `reports/<audit-id>/report.json` in the private store. The JSON contains `id`, `name`, `date` (ISO date), `displayDate`, `scope`, `limitations`, `documents`, `captures` and `rows`.
 
-- Each row has a numeric `number`, `name`, `creativeId`, saved `status`, `reason`, `contentFinding`, `identity` (`issue`, `requested`, `note`), and `vanityCapture` and `trackingCapture` keys into `captures`.
+- Each row has a numeric `number`, `name`, saved `status`, `reason`, `contentFinding`, and `vanityCapture` and `trackingCapture` keys into `captures`. Historical reports can include `creativeId` and `identity` (`issue`, `requested`, `note`) when the original audit verified campaign identifiers.
 - Each capture has `finding`, `quotes`, `sourceUrl`, optional `finalUrl`, optional `captureFile`, and optional `screenshot` (`file`, `alt`, `caption`).
 - Each document has a `file` and a `label`. Put referenced PNG, JSON and ZIP files in `reports/<audit-id>/evidence/` under the same filenames. Use lowercase alphanumeric and hyphen filenames with one extension. Upload the evidence before publishing the report JSON. Use stable pathnames and preserve the original verdicts and source URLs.
 

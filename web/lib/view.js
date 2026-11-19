@@ -49,8 +49,15 @@ function capturePanel(reportId, label, capture) {
 function rowHtml(report, row) {
   const tone = statuses.find(([status]) => status === row.status)[1];
   const rowId = `details-${row.number}`;
+  const subtitle = row.identity ? `Creative ${escape(row.creativeId)}` : `CSV row ${row.number}`;
+  const identity = row.identity ? `<section class="${row.identity.issue ? 'identity-issue' : ''}">
+    <h3>Creative ID check</h3><p>${escape(row.identity.note)}</p>
+    <dl><div><dt>Inventory</dt><dd>${escape(row.creativeId)}</dd></div>
+    <div><dt>Tracking <code>c=</code></dt><dd>${escape(row.identity.requested)}</dd></div></dl>
+  </section>` : '';
+
   return `<tr class="result-row" data-report-row="${row.number}">
-    <th scope="row"><span class="creative-name">${escape(row.name)}</span><span class="creative-id">Creative ${escape(row.creativeId)}</span></th>
+    <th scope="row"><span class="creative-name">${escape(row.name)}</span><span class="creative-id">${subtitle}</span></th>
     <td class="result-cell"><span class="status ${tone}"><span aria-hidden="true"></span>${escape(row.status)}</span></td>
     <td class="reason">${escape(row.reason)}</td>
     <td class="toggle-cell"><button class="toggle" type="button" aria-expanded="false" aria-controls="${rowId}" aria-label="Show details for ${escape(row.name)}">
@@ -59,13 +66,9 @@ function rowHtml(report, row) {
   </tr>
   <tr id="${rowId}" class="detail-row" hidden><td colspan="4">
     <div class="details">
-      <div class="findings">
+      <div class="findings${row.identity ? '' : ' content-only'}">
         <section><h3>Content findings</h3><p>${escape(row.contentFinding)}</p></section>
-        <section class="${row.identity.issue ? 'identity-issue' : ''}"><h3>Creative ID check</h3>
-          <p>${escape(row.identity.note)}</p>
-          <dl><div><dt>Inventory</dt><dd>${escape(row.creativeId)}</dd></div>
-          <div><dt>Tracking <code>c=</code></dt><dd>${escape(row.identity.requested)}</dd></div></dl>
-        </section>
+        ${identity}
       </div>
       <div class="captures">
         ${capturePanel(report.id, 'Vanity', report.captures[row.vanityCapture])}

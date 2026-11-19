@@ -59,6 +59,7 @@ tbody tr > * { border-top: 1px solid var(--edge); }
 .details { padding: clamp(.75rem, 3vw, 1.4rem); }
 .findings, .captures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .85rem; }
 .findings { margin-bottom: .85rem; }
+.findings.content-only { grid-template-columns: 1fr; }
 .findings > section, .capture { border: 1px solid var(--edge); border-radius: .5rem; background: #fff; padding: 1rem; min-width: 0; }
 .findings > .identity-issue { border-color: #d8bd79; background: #fffbef; }
 .findings h3, .capture h4 { font-size: .95rem; margin-bottom: .35rem; }
