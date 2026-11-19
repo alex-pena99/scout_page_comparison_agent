@@ -54,6 +54,13 @@ export async function verifyPackage(base) {
         row.identity || !statusNames.includes(row.status))) {
     throw new Error('Report disagrees with the selected rows or saved findings');
   }
+  if (spec.capture_source && (!report.captureSource ||
+      JSON.stringify(report.captureSource) !== JSON.stringify(spec.capture_source) ||
+      comparison.capture_batch !== spec.capture_source.batch_id ||
+      !report.limitations.some(note => note.includes(spec.capture_source.started_at) &&
+        note.includes(spec.capture_source.finished_at)))) {
+    throw new Error('The report is missing the verified capture batch or its timestamps');
+  }
   const html = renderReport(report);
   const renderedRows = [...html.matchAll(/data-report-row="(\d+)"/g)].map(match => Number(match[1]));
   if (renderedRows.join(',') !== report.rows.map(row=>row.number).join(',') ||

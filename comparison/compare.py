@@ -32,6 +32,9 @@ def safe_file(name):
 
 
 def load_captures(spec, evidence):
+    if 'capture_source' in spec:
+        from saved_captures import load_saved_captures
+        return load_saved_captures(spec, evidence)
     captures = {}
     for target in spec['targets']:
         key = target['key']
@@ -82,12 +85,21 @@ def normalize(text, field):
 
 
 def reviewed_side(side, capture):
-    if set(side) - {'offers', 'gaps', 'finding', 'evidence'} or not side['finding'].strip():
+    if set(side) - {'offers', 'gaps', 'finding', 'evidence', 'coverage'} or not side['finding'].strip():
         raise ValueError('Each reviewed side needs a finding and only supported fields')
     gaps = side.get('gaps', [])
     for gap in gaps:
         if set(gap) != set(GAP_FIELDS) or any(not str(value).strip() for value in gap.values()):
             raise ValueError('Describe each necessary headline evidence gap in all five fields')
+    coverage = side.get('coverage')
+    if 'entry' in capture:
+        if (not isinstance(coverage, dict) or set(coverage) != {'banner', 'primary_views', 'basis'} or
+                coverage['banner'] not in ('clear', 'obstructed', 'uncertain') or
+                coverage['primary_views'] not in ('complete', 'incomplete', 'uncertain') or
+                not isinstance(coverage['basis'], str) or not coverage['basis'].strip()):
+            raise ValueError('Saved capture needs an explicit banner and primary-view assessment')
+        if (coverage['banner'] != 'clear' or coverage['primary_views'] != 'complete') and not gaps:
+            raise ValueError('An obstructed or incomplete saved capture needs a necessary evidence gap')
     evidence = {}
     for item in side['evidence']:
         if set(item) - {'state', 'quotes', 'source'} or item.get('source', 'text') not in ('text', 'image'):
@@ -164,7 +176,8 @@ def decide(review, available, blockers):
         return 'Mismatch', differences + gaps
     if gaps:
         return 'Needs Review', gaps
-    if not vanity and not tracking:
+    if (not vanity and not tracking) or (any('entry' in capture for capture in available.values()) and
+            not any(values for offer in vanity.values() for values in offer['fields'].values())):
         return 'Needs Review', ['No identifiable comparable headline offer']
     return 'Match', ['Displayed headline pricing and offers agree']
 
@@ -176,6 +189,8 @@ def compare(spec, captures, reviews):
     pairs = reviews['pairs']
     rows = []
     used = set()
+    refresh = {}
+    saved = spec.get('capture_source')
     for row in spec['rows']:
         keys = {role: row[role + '_capture'] for role in ROLES}
         pair = '/'.join(keys[role] or 'missing' for role in ROLES)
@@ -191,13 +206,35 @@ def compare(spec, captures, reviews):
         for role, capture in available.items():
             if role in review and capture and (blockers or review.get('correspondence') != 'corresponding'):
                 reviewed_side(review[role], capture)
+        if saved:
+            for role, key in keys.items():
+                if not key:
+                    continue
+                entry = captures[key]['entry']
+                needs = {gap['section_or_action']: gap['why_existing_headline_evidence_is_insufficient']
+                         for gap in review.get(role, {}).get('gaps', [])}
+                if not available[role]:
+                    needs['Baseline'] = entry.get('failure') or 'No usable saved baseline'
+                for view, reason in needs.items():
+                    request = refresh.setdefault((key, view, reason), {
+                        'entry': key, 'navigation_url': entry['navigationUrl'],
+                        'view': view, 'reason': reason, 'rows': [], 'roles': [],
+                    })
+                    if row['row'] not in request['rows']:
+                        request['rows'].append(row['row'])
+                    if role not in request['roles']:
+                        request['roles'].append(role)
         rows.append({'number': row['row'], 'status': status, 'reason': reasons[0],
                      'contentFinding': '. '.join(reasons).rstrip('.') + '.',
                      'captures': keys, 'review': review})
     if set(pairs) - used:
         raise ValueError('Review file contains pairs outside the selected inventory')
-    return {'audit_id': spec['audit_id'], 'runner_revision': spec['runner_revision'],
-            'revision': spec['revision'], 'rows': rows}
+    result = {'audit_id': spec['audit_id'], 'runner_revision': spec['runner_revision'],
+              'revision': spec['revision'], 'rows': rows}
+    if saved:
+        result['capture_batch'] = saved['batch_id']
+        result['refresh_requests'] = list(refresh.values())
+    return result
 
 
 def main():

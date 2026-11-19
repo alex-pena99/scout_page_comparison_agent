@@ -1,64 +1,36 @@
 # Run Scout end to end
 
-Use an authorized desktop Chromium sandbox in a single region. Install Node.js 24, Python 3.9 or newer, and Git. Get the maintained source from this repository and start with the [coordinator](../coordinate-scout-audit/SKILL.md), [config](../config/audit-config.json), and [execution reference](../references/capture-execution.md). Use the [four active guides](../README.md#four-active-comparison-guides) to review evidence. The requirements guide is inactive.
+Scout audits saved evidence from the separate [capture pipeline](capture-pipeline.md). Use Node.js 24, Python 3.9 or newer, and Git. Begin with the [coordinator](../coordinate-scout-audit/SKILL.md) and the [four active guides](../README.md#four-active-comparison-guides).
 
-## Install and pin a selection
+## Select and verify a saved batch
 
-From the repository root:
+Use an explicit batch ID. Check that its age and capture window fit the audit. A recent sample does not cover the full inventory. The first full batch and its timestamp are documented in the [capture handoff](CAPTURE_HANDOFF_2026_11_19.md).
+
+Set `SCOUT_RUN` to a new private run directory outside Git and `SCOUT_BATCH` to the approved batch ID. Here is the initial full batch path with a five-row smoke selection:
 
 ```sh
 npm ci --prefix capture
 npm ci --prefix reporting
 npm ci --prefix web
-python3 capture/prepare.py --run-dir "$SCOUT_RUN" --region "$SCOUT_REGION"
+
+SCOUT_BATCH=scout-captures-20261119210302267-7bb7bd4
+SCOUT_ROWS=2,16,20,77,111
+umask 077
+mkdir "$SCOUT_RUN"
+vercel env run --environment development --project prj_XifLZUl5IZ7GE3UZ0krk4tXODxiy --scope centerfield -- \
+  node capture/storage.mjs get "$SCOUT_BATCH" "$SCOUT_RUN/evidence" --rows "$SCOUT_ROWS"
+python3 comparison/saved_captures.py "$SCOUT_RUN" --batch "$SCOUT_BATCH" --rows "$SCOUT_ROWS"
 ```
 
-Set the shell variables `SCOUT_RUN` to a new directory in approved private storage and `SCOUT_REGION` to the actual browser execution region. The default selection is the full inventory. Add `--rows 2,3,4,5,6` for an explicit selection or `--pilot` for the separately pinned and guarded pilot. Fetch the pinned inventory revision if a shallow checkout lacks it. Use `--instructions REV` and `--runner REV` to select commits explicitly. They default to the checked-out commit. The tool checks that the local runner matches its pinned Git version.
+For a full audit, omit `--rows "$SCOUT_ROWS"` from both commands. Retrieval uses the dedicated capture store and verifies each selected artifact checksum. Preparation always validates the full batch mapping against the committed CSV, even when reviewing only a subset. It rejects a small batch for a full audit. It also verifies the runner hash and capture profile and prints the capture start and finish in UTC. For each entry, the downloaded `evidence/entries/` directory has the capture record, state JSON, rendered text and available screenshots. Keep this directory private.
 
-Review `input.json` before opening pages. This is the exact selection and record-to-entry map, with captured provenance and the unaltered CSV fields. Navigation may trim surrounding whitespace and add HTTPS. Tracking placeholders, query parameters and order remain supplied. A missing or unusable URL is recorded for its row.
-
-## Capture and checkpoint
-
-```sh
-node capture/capture.cjs "$SCOUT_RUN/input.json" "$SCOUT_RUN/offer-plan.json" "$SCOUT_RUN/evidence"
-```
-
-Use the provisioned Chromium on the existing Vercel Sandbox. If needed, set `SCOUT_CHROMIUM_PATH` to that binary. In its absence, the runner uses the pinned Linux Chromium dependency. In the sandbox, install the pinned `capture/` dependencies and transfer only the source and private runtime inputs needed for capture. Run the same command with sandbox-local paths. Copy captures and checkpoints back to approved durable private storage as work completes and before the sandbox can expire. Keep review and publisher credentials out of the capture VM.
-
-The runner starts each unique entry once, delivers results to every mapped CSV record, and releases the slot to the next ready entry. It records queue events, per-visit timing, baseline reuse, scroll coverage and action outcomes. Re-run the same initial command and plan against the same output to resume completed entries. An interrupted entry without a completed capture checkpoint may need to run again. Use one runner process per audit.
-
-After inspecting rendered screenshots and text, use the saved control metadata to plan only missing necessary headline views. The planner lists candidates and validates a drafted plan:
-
-```sh
-node capture/plan.cjs "$SCOUT_RUN/input.json" "$SCOUT_RUN/evidence"
-node capture/plan.cjs "$SCOUT_RUN/input.json" "$SCOUT_RUN/evidence" "$SCOUT_RUN/followup.json"
-node capture/capture.cjs "$SCOUT_RUN/input.json" "$SCOUT_RUN/followup.json" "$SCOUT_RUN/evidence" --reopen
-```
-
-When necessary controls are already known, plan them in `offer-plan.json` before initial capture to reuse the same page. For agent decisions arriving during capture, create a private inbox directory and pass `--followups DIRECTORY` to the initial runner. The agent can inspect `checkpoint-baseline.json` and its saved artifacts and atomically rename a reviewed action array to `DIRECTORY/entry-001.json`. A ready follow-up then shares the active worker pool. Work arriving after the runner exits uses `--reopen`. Reopening revalidates the baseline and stays within the same cumulative entry deadline and configured recheck budget. Put all necessary actions for an entry in its single reviewed follow-up plan.
-
-A plan maps capture entry keys to ordered arrays. This synthetic example expects an explicitly selected device view and associates the verification text with its primary card section:
-
-```json
-{
-  "entry-001": [
-    {
-      "id": "android",
-      "surface": "product-tab",
-      "label": "Android",
-      "button": true,
-      "reason": "Inspect the Android primary device offer",
-      "expected": {"selected": true, "scope": "#android-offers", "text": "Galaxy"}
-    }
-  ]
-}
-```
-
-Use `product-tab`, `headline-selector`, or `headline-carousel`. Use the minimum necessary actions. Use exact visible control labels or an inspected selector, and require selected state and associated content for tabs and selectors. A carousel needs a primary card scope and can have a bounded `carousel` count. A known next state should have an observable text or visible-card expectation. For dependent actions use `dependsOn` with an earlier action ID. Legacy detail plans must be discarded. No terms, FAQs, disclosures, eligibility checks, unrelated actions or access bypasses are allowed.
+Capture credentials are used only by the host process. Use the existing Development OIDC connection, or the approved capture-store credential names in [capture-pipeline.md](capture-pipeline.md). Report publication uses its separate environment. Browser capture, viewer deployment, and schedules are separate operations.
 
 ## Review and compare
 
 Use the coordinator to inspect actual state evidence and align corresponding primary offers. This is the agent review step. The code compares the resulting structured facts and preserves one result per selected CSV row. No handbook, eligibility check or raw card-text comparison is needed. Retain qualifiers like `from` and `up to`, product identity, reward types, billing units and exact promo codes. Record displayed promotional durations only. Record necessary unreadable primary content explicitly. An optional failed action can be ignored if the necessary offer facts are already readable.
+
+Assess cookie banners and primary views on each available corresponding side. In `coverage`, record `banner` as `clear`, `obstructed` or `uncertain`, `primary_views` as `complete`, `incomplete` or `uncertain`, and a short `basis`. Use `clear` if no banner affects the necessary evidence, including when readable saved text resolves every affected primary field. A banner that obscures a necessary image or an uncaptured product state requires a gap. A saved baseline alone does not establish coverage of a family, speed or line selector.
 
 Create a private `reviews.json` keyed by `vanity-entry/tracking-entry`; use `missing` for an unavailable input slot. Reuse a review for the same exact pair. This synthetic example shows both sides for one corresponding offer:
 
@@ -69,11 +41,13 @@ Create a private `reviews.json` keyed by `vanity-entry/tracking-entry`; use `mis
       "correspondence": "corresponding",
       "vanity": {
         "finding": "Fiber Internet displays $35 per month.",
+        "coverage": {"banner": "clear", "primary_views": "complete", "basis": "The saved price card is unobstructed and there are no additional necessary product views."},
         "evidence": [{"state": "attempt-1-baseline", "quotes": ["Fiber Internet $35/mo"]}],
         "offers": [{"id": "fiber", "state": "attempt-1-baseline", "fields": {"product": ["Fiber Internet"], "prices": ["$35/month"]}}]
       },
       "tracking": {
         "finding": "Fiber Internet displays $45 per month.",
+        "coverage": {"banner": "clear", "primary_views": "complete", "basis": "The saved price card is unobstructed and there are no additional necessary product views."},
         "evidence": [{"state": "attempt-1-baseline", "quotes": ["Fiber Internet $45/mo"]}],
         "offers": [{"id": "fiber", "state": "attempt-1-baseline", "fields": {"product": ["Fiber Internet"], "prices": ["$45/month"]}}]
       }
@@ -93,6 +67,10 @@ node reporting/verify.mjs "$SCOUT_RUN/published"
 ```
 
 The builder rechecks the comparison against the evidence, packages a new report, and includes selected rows, capture metadata, screenshots and raw evidence archives. The verifier renders it with the actual viewer code and checks each row, status, count and evidence filename/checksum. Spot-check headline facts against the referenced screenshots and captures before approving publication. Keep those notes private. Record agent planning/review, transfers, assembly and final verification as separate intervals in the private run log when measured. Capture wall time is first capture-task start through last task finish, including gaps; active time is the union of task intervals. End-to-end starts when the audit is accepted and ends after report verification. Mark unmeasured intervals as unknown.
+
+## Hand off refresh requests
+
+Use the report’s **Capture refresh handoff** document or `refresh_requests` in the comparison checkpoint. Each item specifies the saved batch, original entry URL, affected rows and roles, required primary view, and the evidence gap. Give these items to the authorized operator of the separate capture pipeline. The handoff is a local record and does not contact or trigger a service. Fix missing URLs or persistent certificate and routing errors at the source before requesting a refresh. Use the standalone pilot command with an explicit row selection and a reviewed adapter if necessary. Select the resulting new batch explicitly and issue a new audit. Keep the original evidence batch and audit intact.
 
 ## Publish a new private report
 

@@ -74,6 +74,29 @@ class HeadlineComparisonTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'does not appear'):
             self.status()
 
+    def test_saved_capture_requires_coverage_and_preserves_independent_difference(self):
+        self.available = {role: {**capture, 'entry': {}} for role, capture in self.available.items()}
+        with self.assertRaisesRegex(ValueError, 'explicit banner and primary-view'):
+            self.status()
+        self.review['vanity']['coverage'] = {
+            'banner': 'clear', 'primary_views': 'complete', 'basis': 'All captured primary offers inspected'}
+        self.review['tracking']['coverage'] = {
+            'banner': 'obstructed', 'primary_views': 'incomplete', 'basis': 'Cookie banner covers primary text'}
+        with self.assertRaisesRegex(ValueError, 'needs a necessary evidence gap'):
+            self.status()
+        self.review['tracking']['gaps'] = [{name: 'wireless primary view missing' for name in GAP_FIELDS}]
+        self.assertEqual(self.status(), 'Needs Review')
+        self.review['tracking']['offers'][0]['fields']['prices'] = ['$45/month']
+        self.assertEqual(self.status(), 'Mismatch')
+
+    def test_saved_capture_with_only_empty_offers_cannot_match(self):
+        self.available = {role: {**capture, 'entry': {}} for role, capture in self.available.items()}
+        for role in self.available:
+            self.review[role] = side({'prices': []})
+            self.review[role]['coverage'] = {
+                'banner': 'clear', 'primary_views': 'complete', 'basis': 'Reviewed the saved baseline'}
+        self.assertEqual(self.status(), 'Needs Review')
+
 
 if __name__ == '__main__':
     unittest.main()

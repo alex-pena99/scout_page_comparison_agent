@@ -54,6 +54,9 @@ def panel(key, capture, review, files):
     result = {'sourceUrl': record['target']['prepared'], 'captureFile': key + '-capture.json',
               'finding': review.get('finding') or ('Rendered desktop landing page.' if baseline else failure(record)),
               'quotes': list(dict.fromkeys(quote for item in review.get('evidence', []) for quote in item['quotes']))}
+    entry = capture.get('entry')
+    if entry and entry.get('startedAt') and entry.get('finishedAt'):
+        result['finding'] += f" Capture window {entry['startedAt']} to {entry['finishedAt']}."
     if baseline:
         result['finalUrl'] = baseline['url']
         selected = [states[item['state']] for item in review.get('evidence', [])]
@@ -64,7 +67,7 @@ def panel(key, capture, review, files):
             if not artifact.exists():
                 copy2(capture['directory'] / safe_file(image['png']), artifact)
             result['screenshot'] = {'file': filename, 'alt': 'Captured desktop headline evidence',
-                                    'caption': 'Saved desktop view for this comparison'}
+                                    'caption': f"Captured {image['time']}" if entry else 'Saved desktop view for this comparison'}
     return result
 
 
@@ -89,7 +92,11 @@ def build(root, output):
     files = output / 'evidence'
     files.mkdir()
     for key, capture in captures.items():
-        copy2(capture['directory'] / 'capture.json', files / safe_file(key + '-capture.json'))
+        destination = files / safe_file(key + '-capture.json')
+        if 'entry' in capture:
+            save(destination, {'entry': capture['entry'], 'capture': capture['record'] if capture['paths'] else None})
+        else:
+            copy2(capture['directory'] / 'capture.json', destination)
     views, rows, panels = {}, [], {}
     for source, finding in zip(spec['rows'], decision['rows']):
         row = {'number': source['row'],
@@ -111,6 +118,12 @@ def build(root, output):
                             ('checkpoint-comparisons.json', 'Headline comparisons and coverage')):
         copy2(root / ('input.json' if filename == 'checkpoint-selection.json' else filename), files / filename)
         documents.append({'file': filename, 'label': label})
+    saved = spec.get('capture_source')
+    if saved and decision['refresh_requests']:
+        filename = 'capture-refresh-requests.json'
+        save(files / filename, {'batch_id': saved['batch_id'], 'status': 'manual handoff',
+                                'requests': decision['refresh_requests']})
+        documents.append({'file': filename, 'label': 'Capture refresh handoff'})
     for source in sorted((root / 'evidence').glob('runtime-*.json')):
         copy2(source, files / safe_file(source.name))
         documents.append({'file': source.name, 'label': source.stem.replace('-', ' ').capitalize()})
@@ -120,18 +133,27 @@ def build(root, output):
         filename = f'raw-evidence-{index // 40 + 1:02}.zip'
         with ZipFile(files / filename, 'x', ZIP_DEFLATED, compresslevel=3) as archive:
             for key in subset:
-                for source in sorted(captures[key]['directory'].iterdir()):
-                    if source.is_file() and source.suffix in ('.json', '.png'):
-                        archive.write(source, f'{key}/{safe_file(source.name)}')
+                capture = captures[key]
+                if 'paths' in capture:
+                    for source in capture['paths']:
+                        archive.write(source, f'{key}/{source.name}')
+                else:
+                    for source in sorted(capture['directory'].iterdir()):
+                        if source.is_file() and source.suffix in ('.json', '.png'):
+                            archive.write(source, f'{key}/{safe_file(source.name)}')
         documents.append({'file': filename, 'label': f'Raw evidence · {subset[0]} to {subset[-1]}'})
 
     date = datetime.fromisoformat(spec['pre_capture_checkpoint_utc'])
-    timing = capture_time(captures)
+    timing = None if saved else capture_time(captures)
     limitations = [
         'Desktop headline pricing and offers only. Eligibility, complete terms and administrative details are outside scope.',
         f'Tracking templates were opened as supplied in {spec["region"]}. No ZIP or address was submitted.',
         f'Instructions {spec["revision"]}. Inventory {spec["inventory_revision"]}. Runner {spec["runner_git_revision"]}.',
     ]
+    if saved:
+        limitations.append(f"Saved capture batch {saved['batch_id']}. "
+                           f"Capture window {saved['started_at']} to {saved['finished_at']}. "
+                           'Scout reviewed saved evidence and made no live page visits.')
     if timing:
         limitations.append(f'Capture wall time {timing["wall_seconds"]:.1f} seconds across '
                            f'{timing["active_seconds"]:.1f} seconds with an active capture. '
@@ -141,6 +163,8 @@ def build(root, output):
               'scope': f'{len(rows)} CSV records · {len(keys)} unique usable entry URLs',
               'rows': rows, 'captures': panels, 'documents': documents,
               'limitations': limitations, 'captureTiming': timing}
+    if saved:
+        report['captureSource'] = saved
     save(output / 'report.json', report)
     manifest = {}
     for file in sorted(files.iterdir()):

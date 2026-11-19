@@ -49,6 +49,31 @@ def navigation_url(original):
     return prepared
 
 
+def map_records(records, selected):
+    targets = {}
+    rows = []
+    for number in selected:
+        row = {**records[number], 'row': number, 'input_blockers': {}}
+        for role, column in [('vanity', 'Vanity URL'), ('tracking', 'Tracking URL')]:
+            original = row[column]
+            prepared = navigation_url(original)
+            if prepared is None:
+                row[role + '_capture'] = None
+                row['input_blockers'][role] = f'Missing or unusable {role} URL'
+                continue
+            target = targets.setdefault(prepared, {
+                'key': f'entry-{len(targets) + 1:03}', 'original': original, 'prepared': prepared,
+                'rows': [], 'roles': [],
+            })
+            if number not in target['rows']:
+                target['rows'].append(number)
+            if role not in target['roles']:
+                target['roles'].append(role)
+            row[role + '_capture'] = target['key']
+        rows.append(row)
+    return rows, list(targets.values())
+
+
 def prepare(args):
     instructions = revision(args.instructions)
     runner = revision(args.runner)
@@ -87,27 +112,7 @@ def prepare(args):
         selected = [int(value) for value in args.rows.split(',')] if args.rows else list(records)
     if not selected or len(set(selected)) != len(selected) or set(selected) - records.keys():
         raise ValueError('Select unique existing CSV data rows')
-    targets = {}
-    rows = []
-    for number in selected:
-        row = {**records[number], 'row': number, 'input_blockers': {}}
-        for role, column in [('vanity', 'Vanity URL'), ('tracking', 'Tracking URL')]:
-            original = row[column]
-            prepared = navigation_url(original)
-            if prepared is None:
-                row[role + '_capture'] = None
-                row['input_blockers'][role] = f'Missing or unusable {role} URL'
-                continue
-            target = targets.setdefault(prepared, {
-                'key': f'entry-{len(targets) + 1:03}', 'original': original, 'prepared': prepared,
-                'rows': [], 'roles': [],
-            })
-            if number not in target['rows']:
-                target['rows'].append(number)
-            if role not in target['roles']:
-                target['roles'].append(role)
-            row[role + '_capture'] = target['key']
-        rows.append(row)
+    rows, targets = map_records(records, selected)
     now = datetime.now(timezone.utc)
     audit_id = args.audit_id or now.strftime('scout-headlines-%Y%m%d-%H%M%S-%f-') + instructions[:7]
     if not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,79}', audit_id):
@@ -122,7 +127,7 @@ def prepare(args):
         'inventory_sha256': sha256(raw).hexdigest(), 'pre_capture_checkpoint_utc': now.isoformat(),
         'region': args.region, 'settings': config['capture'], 'comparison': config['comparison'],
         'results': config['results'], 'checks': config['checks'], 'tracking_policy': config['tracking_urls'],
-        'rows': rows, 'targets': list(targets.values()),
+        'rows': rows, 'targets': targets,
     }
 
 

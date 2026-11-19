@@ -41,7 +41,7 @@ The legacy [requirements guide](../compare-advertised-requirements.SKILL.md) is 
 
 1. Read this guide, config, active specialists, and inventory from one recorded commit.
 2. Use all inventory records unless the user supplies a filter. Preserve source rows, including duplicate mappings; header is CSV row 1.
-3. For an explicit pilot, verify its pinned inventory/hash and exact selection. Abort invalid selection before capture; never fall back to all records. Record both instruction and pilot-inventory revisions.
+3. For an explicit pilot, verify its pinned inventory/hash and exact selection. Abort invalid selection before comparison; never fall back to all records. Record both instruction and pilot-inventory revisions.
 4. Preserve Account, Vanity URL, Tracking URL, Position, and Creative Name. Ignore Creative ID in legacy inputs. Creative Name is context, not a result gate.
 5. Record audit ID, timestamps, instruction/runner revisions, config version, and report scope. Label every new report exactly **Headline pricing and offer comparison**.
 
@@ -50,31 +50,14 @@ The legacy [requirements guide](../compare-advertised-requirements.SKILL.md) is 
 
 Preserve original URLs and every parameter, including c=, placeholders, and query order. For navigation only, trim surrounding whitespace, add https:// when absent, permit browser encoding, and follow normal redirects. Never invent click values or replace {lpurl}. A placeholder alone is not an error. Missing/unusable inputs require review, not a substitute landing page.
 
-# Stage 2 — Capture headline evidence
+# Stage 2 — Retrieve saved headline evidence
 
-## 2.1 Capture and reuse
-**Goal:** Obtain readable headline offers with minimal repeated work.
+1. Follow the [audit runbook](../docs/run.md) and retrieve the explicitly named batch through the private capture-store client. Confirm its CSV mappings, capture profile, timestamps and suitability for the requested records. Keep capture and report credentials separate.
+2. Review the saved screenshot, rendered text and capture metadata for each corresponding primary offer. Check cookie banners, rendered image text and selected product/device/speed/line views. A baseline can be adequate when it covers all necessary facts. A cookie banner only blocks comparison when it obscures necessary evidence that the saved text or another verified state cannot supply. Hidden content does not establish headline parity.
+3. Record banner and primary-view coverage in the side review. Preserve an unavailable page or a necessary unreadable or uncaptured headline as Needs Review unless an independent confirmed difference establishes Mismatch. Redundant or excluded supporting details do not block agreement.
+4. Use the capture refresh handoff for necessary gaps. Identify the original entry, required state and affected rows and request a new capture from the separate pipeline operator. Scout does not open live URLs or dispatch a capture job. Use a new, explicitly selected batch when it is ready. Persist current evidence and decisions without editing historical batches.
 
-1. Use dedicated Chromium and equivalent desktop settings from config; never the PM's personal browser. Verify actual capture capability.
-2. Deduplicate exact entry requests within the audit, preserving row mappings and distinct tracking templates. Do not merge merely because redirects look alike.
-3. Keep the continuously filled four-worker queue, isolated entry contexts, bounded page reuse, existing timeouts, and shared retry/recheck budgets in the execution reference.
-4. Capture one baseline and read rendered headline/offer-card text, scrolling for headline cards and lazy content. Use screenshots when primary text is image-based or unreadable by extraction.
-5. Relevant product tabs or headline-offer selectors/carousels may expose additional headline offers. Select equivalent product/device views and verify the selected state and associated headline content. Do not open supporting details, terms, FAQs, or disclosure modals.
-6. Save original/navigation/final URLs, text/visual evidence, locations, and relevant selected views. Hidden-loaded data may be diagnostic but cannot establish headline parity.
-
-## 2.2 Handle controls and gaps
-**Goal:** Keep capture optimizations without turning optional details into blockers.
-
-Skip disabled actions and never repeat unchanged failures. Verify state changes instead of fixed sleeps; dismiss an unsolicited blocking overlay safely and verify closure before continuing. Do not intentionally open disclosure content. No force-clicking, TLS/certificate bypass, access-control bypass, checkout, or form submission.
-
-Use an existing valid baseline and same-entry page when practical; reopen only for a necessary missing headline state. Do not repeat full baseline/scroll/screenshots automatically. Stay within the existing page/context cap and cumulative deadlines. Save operation timings and runner provenance.
-
-Classify missing evidence:
-- Supporting-detail/FAQ/disclosure failures: outside scope, nonblocking, no follow-up required.
-- Unreadable headline price, product, reward, code, or primary offer view: a specific necessary gap; use the shared targeted recheck if possible.
-- Visible evidence of an additional headline offer whose primary content cannot be read: retain that gap; do not infer a match or absence.
-
-A location label difference alone is not a blocker and does not require entering a ZIP. Compare the displayed headline offers; if they differ, report the observed difference without guessing why. An unconfirmed page bottom alone is not a blocker, but unreadable or uncaptured necessary headline content remains one.
+A location label alone does not block readable headline comparison. An unconfirmed page bottom alone is not a blocker.
 
 # Stage 3 — Compare four headline fields
 
@@ -99,7 +82,7 @@ Use Needs Review when no comparable offer or experience can be identified, such 
 
 Reuse shared captures and the same offer map. References are handoffs, not recursive audits. Preserve exact quotes and extract only in-scope fields; ignore excluded clauses even when the raw passage includes them. Do not compare eligibility, including inline eligibility. Retain headline product identity and units without validating who qualifies.
 
-Use one shared targeted recheck for an uncertain headline value or apparent absence when needed. Continue independent checks after a difference. Unstated optional codes/durations do not need to be supplied or verified. Identical ambiguity/conflicting supporting text does not require commercial interpretation when headline agreement is readable.
+Use the manual capture refresh handoff for an uncertain headline value or apparent absence when needed. Continue independent checks after a difference. Unstated optional codes/durations do not need to be supplied or verified. Identical ambiguity/conflicting supporting text does not require commercial interpretation when headline agreement is readable.
 
 # Stage 4 — Save and decide
 

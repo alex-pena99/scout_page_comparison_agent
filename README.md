@@ -9,7 +9,7 @@ The PM requests an audit and receives Match, Mismatch, or Needs Review with a sh
 
 ## Start here
 
-Use [coordinate-scout-audit/SKILL.md](coordinate-scout-audit/SKILL.md) as the master protocol, [config/audit-config.json](config/audit-config.json) for scope/capture settings, and [references/capture-execution.md](references/capture-execution.md) for execution and sandbox implementation requirements.
+Use [coordinate-scout-audit/SKILL.md](coordinate-scout-audit/SKILL.md) as the master protocol, [config/audit-config.json](config/audit-config.json) for scope/capture settings, and [references/capture-execution.md](references/capture-execution.md) for standalone capture and sandbox implementation requirements.
 
 ## Compare only
 
@@ -49,17 +49,17 @@ An unreadable headline is not proof of absence. A changed product in an identifi
 
 Label every new report **Headline pricing and offer comparison**. Return result counts and **Row | Account | Creative | Vanity URL | Tracking URL | Result | Reason**. Use reasons such as "$35/mo versus $45/mo" or "Tracking headline price unreadable," not "eligibility unverified." Match does not certify eligibility, terms, commercial correctness, or all markets/devices.
 
-## Preserve inputs and capture optimizations
+## Preserve inputs and select saved evidence
 
 The [CSV](data/scout-url-inventory.csv) keeps **Account, Vanity URL, Tracking URL, Position, Creative Name**. Preserve all original records and exact URL values. Navigate supplied tracking templates with all parameters/placeholders intact, adding a missing scheme for navigation only and following normal redirects. Do not replace {lpurl}, fix routing, or compare campaign identifiers.
 
 No filter means the full inventory. The existing [five-record pilot](config/pilot-config.json) remains unchanged and uses its pinned inventory/hash and exact row guards; invalid pilot selection must not fall back to all records. The old pilot instruction to read all guides does not activate the disabled requirements stub.
 
-Keep dedicated desktop Chromium (1440 x 900), equivalent locale/region, clean isolated contexts, the continuously filled four-worker queue, bounded same-entry reuse, targeted reopening, state verification, one transient retry/shared targeted recheck, existing timeouts, and operation timings. Do not repeat disabled/unchanged failures. TLS validation, access protections, and source read-only behavior remain intact. See the execution reference for exact limits and acceptance checks.
+Select one saved batch by ID, verify its inventory mapping, and review when its evidence was captured. Scout uses private saved screenshots, rendered text and metadata. For uncaptured or obscured primary offers, record the necessary gap and hand a refresh request to the separate capture pipeline operator. Standalone capture setup and execution are documented in [capture-pipeline.md](docs/capture-pipeline.md).
 
 ## Maintained implementation
 
-Follow the [end-to-end run instructions](docs/run.md) to pin a selection, capture evidence, review headline facts, package a report and publish it to the existing private viewer.
+Follow the [end-to-end run instructions](docs/run.md) to verify and read a private capture batch, review headline facts, package a report and publish it to the existing private viewer.
 
 | Path | Role |
 | --- | --- |

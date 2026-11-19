@@ -65,29 +65,41 @@ export async function publish(base,client){
   await preserve(client,prefix+'manifest.json',bytes);
   return {storeId:CAPTURE_STORE,batchId:m.batchId,manifestPath:prefix+'manifest.json',filesVerified:items.length,counts:m.counts};
 }
-export async function retrieve(id,dest,client,entryKey){
+export async function retrieve(id,dest,client,entryKey,{rows}={}){
   const prefix='captures/'+batchId(id)+'/';const bytes=await client.read(prefix+'manifest.json');
   if(!bytes)throw new Error('Finished batch not found');const m=JSON.parse(bytes);
   if(m.batchId!==id||m.kind!=='page-capture-batch')throw new Error('Manifest identity mismatch');
   if(entryKey&&!m.entries.some(e=>e.key===entryKey))throw new Error('Entry is not in this batch');
+  let entries;
+  if(rows){
+    if(entryKey||!rows.length||new Set(rows).size!==rows.length||
+      rows.some(n=>!Number.isSafeInteger(n)||!m.rows.some(r=>r.row===n)))throw new Error('Invalid batch row selection');
+    entries=new Set(m.rows.filter(r=>rows.includes(r.row)).flatMap(r=>[r.vanityEntry,r.trackingEntry]).filter(Boolean));
+    if([...entries].some(key=>!/^entry-[a-z0-9-]+$/.test(key)||!m.entries.some(e=>e.key===key)))throw new Error('Invalid batch entry mapping');
+    if(!Object.hasOwn(m.files,'inventory.json'))throw new Error('Batch lacks pinned inventory');
+  }
   await mkdir(dest,{recursive:true,mode:0o700});
   await writeFile(join(dest,'manifest.json'),bytes,{flag:'wx',mode:0o600});
   for(const [file,record]of Object.entries(m.files)){
     safePath(file);if(entryKey&&!file.startsWith('entries/'+entryKey+'/'))continue;
+    if(entries&&file!=='inventory.json'&&(!file.startsWith('entries/')||!entries.has(file.split('/')[1])))continue;
     const data=await client.read(prefix+file);
     if(!data||hash(data)!==record.sha256||data.length!==record.bytes)throw new Error('Stored file verification failed: '+file);
     const target=join(dest,file);await mkdir(dirname(target),{recursive:true,mode:0o700});
     await writeFile(target,data,{flag:'wx',mode:0o600});
   }
-  return {batchId:id,destination:dest,entry:entryKey||'all'};
+  return {batchId:id,destination:dest,...(rows?{rows}:{entry:entryKey||'all'})};
 }
 async function main(){
   // Ensure @vercel/blob cannot prioritize an unrelated inherited project OIDC/store.
   const auth=credentials();delete process.env.VERCEL_OIDC_TOKEN;delete process.env.BLOB_STORE_ID;
   delete process.env.BLOB_READ_WRITE_TOKEN;
-  const client=blobClient(auth);const [command,a,b,c]=process.argv.slice(2);
+  const client=blobClient(auth);const [command,a,b,c,d,...extra]=process.argv.slice(2);
   if(command==='publish')console.log(JSON.stringify(await publish(a,client)));
-  else if(command==='get')console.log(JSON.stringify(await retrieve(a,b,client,c)));
+  else if(command==='get'){
+    if(!a||!b||extra.length||(c==='--rows')!==Boolean(d))throw new Error('Usage: storage.mjs get BATCH DEST [ENTRY | --rows CSV_ROWS]');
+    console.log(JSON.stringify(await retrieve(a,b,client,c==='--rows'?undefined:c,{rows:d?.split(',').map(Number)})));
+  }
   else if(command==='list'){
     let cursor;do{const r=await client.list('captures/',cursor);
       for(const blob of r.blobs)if(blob.pathname.endsWith('/manifest.json'))console.log(blob.pathname);

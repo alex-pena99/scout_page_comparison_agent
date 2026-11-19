@@ -1,6 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {mkdtemp,mkdir,writeFile,readFile,rm}=require('node:fs/promises');
+const {mkdtemp,mkdir,writeFile,readFile,rm,readdir}=require('node:fs/promises');
 const {tmpdir}=require('node:os');
 const path=require('node:path');
 const {createServer}=require('node:http');
@@ -63,6 +63,11 @@ test('capture packaging accounts for missing inputs/files; storage is immutable 
   await publish(pkg.base,intermittent);assert.equal(failedRead,true);assert.equal(order.length,result.filesVerified+1);
   await retrieve('test-batch',path.join(dir,'download'),client,'entry-001');
   assert.match(await readFile(path.join(dir,'download/entries/entry-001/attempt-1-baseline.txt'),'utf8'),/35/);
+  const subset=path.join(dir,'row-download');
+  await retrieve('test-batch',subset,client,undefined,{rows:[2]});
+  assert.deepEqual(await readdir(path.join(subset,'entries')),['entry-001']);
+  assert.match(await readFile(path.join(subset,'inventory.json'),'utf8'),/Fixture/);
+  await assert.rejects(retrieve('test-batch',path.join(dir,'bad-row'),client,undefined,{rows:[99]}),/Invalid batch row selection/);
   objects.set('captures/test-batch/entries/entry-001/attempt-1-baseline.txt',Buffer.from('corrupt'));
   await assert.rejects(retrieve('test-batch',path.join(dir,'corrupt'),client),/verification failed/);
   await assert.rejects(publish(pkg.base,client),/Immutable object differs/);
