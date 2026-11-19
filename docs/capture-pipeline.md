@@ -99,8 +99,15 @@ is labeled `finished_with_gaps`; it is not an assertion of complete coverage.
 Consumers must select a batch whose inventory, requested rows, profile, and age
 fit the audit. A later small test batch does not supersede a full inventory batch.
 
-The baseline screenshot is full-page. Standard product tabs with an explicit
-associated panel are discovered automatically, including newly revealed tabs.
+Baseline and automatically discovered headline-view screenshots are full-page.
+Discovery supports tabs with explicit panels, selected-state ARIA tabs without
+panel IDs, Apple/Android pressed-state toggles, and the observed legacy AT&T
+Internet/Wireless category buttons on `att.com/cfd/` pages. Newly revealed device
+views are visited before leaving their parent category. Each view is selected
+and verified before scrolling and saving its evidence; repeated content reuses
+the existing state with an explicit action reference. A failed control remains
+a recorded gap. The known consent banner's offered "Continue without changes"
+button is used before baseline capture when present, with closure verified.
 Actions are verified and bounded; terms, forms, disclosures, and external CTAs
 are excluded. Custom controls without tab semantics require a reviewed action
 plan or adapter. Saved control metadata makes this visible; never describe the

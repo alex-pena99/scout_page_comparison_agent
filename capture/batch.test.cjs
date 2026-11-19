@@ -76,3 +76,39 @@ test('capture packaging accounts for missing inputs/files; storage is immutable 
   assert.throws(()=>credentials({SCOUT_CAPTURE_STORE_ID:CAPTURE_STORE,SCOUT_CAPTURE_READ_WRITE_TOKEN:'wrong'}),/does not belong/);
  }finally{await rm(dir,{recursive:true,force:true});}
 });
+
+test('nested headline views without panel IDs are captured before leaving their parent',async()=>{
+ const dir=await mkdtemp(path.join(tmpdir(),'scout-nested-tabs-'));
+ const html=`<!doctype html><main><h1>Internet and wireless offers</h1><p>${'Compare our headline internet and mobile plans. '.repeat(5)}</p>
+ <nav><a href="/wrong">Wireless</a></nav>
+ <div role="tablist"><button role="tab" aria-selected="false" id="wireless">Wireless</button><button role="tab" aria-selected="true" id="internet">Internet</button></div>
+ <div id="internetCards">Internet $35/month</div>
+ <section id="devices" hidden><button aria-pressed="false" id="apple">Apple iOS</button><button aria-pressed="true" id="android">Android</button><div style="height:1100px"></div><p id="deviceCard">Galaxy $10/month</p></section>
+ <button role="tab" aria-selected="false" id="hyper">Hyper-gig speeds</button><p id="speedCard">1 GIG $55/month</p>
+ <button role="tab" aria-selected="false" id="terms">Offer terms</button>
+ <form><button aria-pressed="false" type="submit">Android</button></form>
+ <div id="consent-banner" style="position:fixed;bottom:0;background:white">Cookies <button id="consent">Continue without changes</button></div>
+ </main><script>
+ const el=id=>document.getElementById(id);
+ el('consent').onclick=()=>el('consent-banner').hidden=true;
+ for(const id of ['wireless','internet'])el(id).onclick=()=>{for(const x of ['wireless','internet'])el(x).setAttribute('aria-selected',String(x===id));el('devices').hidden=id!=='wireless';el('internetCards').hidden=id!=='internet';};
+ for(const id of ['apple','android'])el(id).onclick=()=>{for(const x of ['apple','android'])el(x).setAttribute('aria-pressed',String(x===id));el('deviceCard').textContent=id==='apple'?'iPhone $5/month':'Galaxy $10/month';};
+ el('hyper').onclick=()=>{el('hyper').setAttribute('aria-selected','true');el('speedCard').textContent='2 GIG $65/month and 5 GIG $95/month';};
+ el('terms').onclick=()=>el('speedCard').textContent='UNEXPECTED DISCLOSURE';
+ </script>`;
+ const server=createServer((req,res)=>res.end(html));await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ const url='http://127.0.0.1:'+server.address().port;
+ try{
+  await run({audit_id:'nested',revision:'fixture',runner_revision:'fixture',inventory_revision:'fixture',config_version:5,
+   settings:config.capture,region:'test',autonomous_headline_tabs:true,targets:[{key:'entry-001',original:url,prepared:url,roles:['vanity']}]},dir,{});
+  const c=JSON.parse(await readFile(path.join(dir,'entry-001/capture.json'),'utf8'));const a=c.attempts[0];
+  assert.equal(a.ready,true);assert.equal(a.coverage.filter(x=>x.inspected===false).length,0);
+  const states=await Promise.all(a.states.map(async s=>({...s,data:JSON.parse(await readFile(path.join(dir,'entry-001',s.json),'utf8'))})));
+  for(const headline of ['iPhone $5/month','Galaxy $10/month','2 GIG $65/month and 5 GIG $95/month'])assert.ok(states.some(s=>s.data.visibleText.includes(headline)),headline);
+  assert.ok(states.every(s=>s.fullPage));
+  assert.ok(states.every(s=>!s.data.visibleText.includes('Continue without changes')&&!s.data.visibleText.includes('UNEXPECTED DISCLOSURE')));
+  const labels=a.actions.map(x=>x.reason);
+  assert.ok(labels.findIndex(x=>x.includes('Android'))<labels.findIndex(x=>x.includes('Internet')));
+  assert.equal(labels.length,5); // Wireless, its two devices, Internet, Hyper-gig.
+ }finally{await new Promise(r=>server.close(r));await rm(dir,{recursive:true,force:true});}
+});

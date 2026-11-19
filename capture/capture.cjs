@@ -312,7 +312,8 @@ async function perform(page, action, context) {
     }
     const before = cleanText(await bodyText(page));
     const initialUrl = page.url();
-    if (action.expected?.selected && observed.selected) {
+    if (action.expected?.selected && (observed.selected ||
+        action.expected.selectedClass && new RegExp(action.expected.selectedClass).test(observed.className))) {
       await measure(timings,'state_verification',()=>verifyState(page,
         {...action, expected:{...action.expected, changed:false}}, before, timeout),fields);
       result.outcome = 'already-in-state';
@@ -468,6 +469,18 @@ async function runEntry(browser, input, target, actions, output, job) {
       }
       if (!reuse) {
         attempt.scroll = await track('scrolling',()=>scrollPage(page,remaining));
+        if (input.autonomous_headline_tabs) {
+          const consent=page.getByRole('button',{name:'Continue without changes',exact:true}).filter({visible:true});
+          if(await consent.count()===1){
+            const known=await consent.evaluate(el=>{for(let n=el.parentElement;n;n=n.parentElement){
+              if(/gpc|consent|cookie/i.test(n.id+' '+n.className))return true;}return false;});
+            if(known){
+              try{await track('consent_dismissal',async()=>{await consent.click({timeout:Math.min(remaining(),limits.interaction)});
+                await consent.waitFor({state:'hidden',timeout:Math.min(remaining(),limits.interaction)});});}
+              catch(error){attempt.coverage.push({id:'consent-banner',inspected:false,reason:'Consent banner could not be dismissed'});}
+            }
+          }
+        }
         const data = await collect('baseline','advertised',true);
         if (data.visibleText.length <= 160 || !data.headings.some(h=>h.visible) ||
           !/internet|provider|broadband|fiber|wireless|compare|offer|plan|customer|support|service|mobile|cellular/i.test(data.visibleText)) {
@@ -489,6 +502,7 @@ async function runEntry(browser, input, target, actions, output, job) {
         if (!input.autonomous_headline_tabs) return;
         const { discoverHeadlineTabs } = require('./headline-tabs.cjs');
         const found = await discoverHeadlineTabs(page);
+        const added=[];
         for (const action of found) {
           if (discovered.has(action.selector)) continue;
           discovered.add(action.selector);
@@ -497,12 +511,15 @@ async function runEntry(browser, input, target, actions, output, job) {
             break;
           }
           validatePlan({[target.key]:[action]},[target]);
-          pending.push(action);
+          added.push(action);
         }
+        // Finish newly revealed child views before switching to another parent.
+        pending.unshift(...added);
         attempt.discoveredTabs = [...discovered];
       }
       await discover();
-      for (const action of pending) {
+      while (pending.length) {
+        const action=pending.shift();
         if (remaining() < 100) {
           attempt.actions.push({id:action.id,reason:action.reason,outcome:'deadline',required:action.required!==false});
           continue;
@@ -530,7 +547,8 @@ async function runEntry(browser, input, target, actions, output, job) {
               state.reuseState = signatures.get(fingerprint);
               break;
             }
-            await collect(step.id,'interaction-revealed: '+(action.label || action.aria || action.id),false);
+            if(action.automatic)await track('scrolling',()=>scrollPage(page,remaining));
+            await collect(step.id,'interaction-revealed: '+(action.label || action.aria || action.id),!!action.automatic);
             signatures.set(fingerprint,step.id);
             await discover();
           } else {
