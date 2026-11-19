@@ -1,5 +1,8 @@
 # Scout
 
+Standalone capture and private storage: [capture pipeline](docs/capture-pipeline.md).
+It saves timestamped page evidence independently of comparisons and reports.
+
 **Headline pricing and offer comparison** between supplied vanity and tracking pages.
 
 The PM requests an audit and receives Match, Mismatch, or Needs Review with a short reason. Scout compares headline information only; it does not investigate complete offer terms.

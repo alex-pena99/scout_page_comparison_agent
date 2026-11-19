@@ -483,7 +483,26 @@ async function runEntry(browser, input, target, actions, output, job) {
       const progress = {timings:attempt.timings, visit, actionStates:attempt.actions, remaining, limits};
       const blocked = new Set();
       const signatures = new Map();
-      for (const action of actions) {
+      const pending = [...actions];
+      const discovered = new Set();
+      async function discover() {
+        if (!input.autonomous_headline_tabs) return;
+        const { discoverHeadlineTabs } = require('./headline-tabs.cjs');
+        const found = await discoverHeadlineTabs(page);
+        for (const action of found) {
+          if (discovered.has(action.selector)) continue;
+          discovered.add(action.selector);
+          if (discovered.size > 24) {
+            attempt.coverage.push({id:'tab-discovery-limit',inspected:false,reason:'Additional primary tabs exceed the bounded discovery limit'});
+            break;
+          }
+          validatePlan({[target.key]:[action]},[target]);
+          pending.push(action);
+        }
+        attempt.discoveredTabs = [...discovered];
+      }
+      await discover();
+      for (const action of pending) {
         if (remaining() < 100) {
           attempt.actions.push({id:action.id,reason:action.reason,outcome:'deadline',required:action.required!==false});
           continue;
@@ -513,6 +532,7 @@ async function runEntry(browser, input, target, actions, output, job) {
             }
             await collect(step.id,'interaction-revealed: '+(action.label || action.aria || action.id),false);
             signatures.set(fingerprint,step.id);
+            await discover();
           } else {
             if (['obstructed','obstructed-after-recovery','disabled-skipped','timed-out'].includes(state.outcome)) {
               blocked.add(controlKey);

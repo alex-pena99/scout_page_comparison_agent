@@ -1,0 +1,11 @@
+{
+  "storeId": "store_JwQkhjM0YGiIsrIe",
+  "storeName": "scout-pm-reports-blob-captures",
+  "projectId": "prj_9p9wuLVeLNdnzZuF0WFJBmtU79Ou",
+  "team": "centerfield",
+  "region": "iad1",
+  "sandbox": "scout-page-captures",
+  "prefix": "captures/",
+  "access": "private",
+  "scheduleEnabled": false
+}

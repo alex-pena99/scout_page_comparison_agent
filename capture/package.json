@@ -2,7 +2,16 @@
   "name": "scout-capture",
   "private": true,
   "version": "1.0.0",
-  "engines": {"node": ">=24"},
-  "scripts": {"check": "node --check capture.cjs", "test": "node --test capture.test.cjs"},
-  "dependencies": {"@sparticuz/chromium": "153.0.0", "playwright": "1.59.1"}
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "check": "node --check capture.cjs && node --check headline-tabs.cjs && node --check batch.cjs && node --check storage.mjs && node --check package-batch.mjs",
+    "test": "node --test capture.test.cjs batch.test.cjs"
+  },
+  "dependencies": {
+    "@sparticuz/chromium": "153.0.0",
+    "playwright": "1.59.1",
+    "@vercel/blob": "2.9.0"
+  }
 }
