@@ -239,7 +239,8 @@
     "public_statuses": [
       "Match",
       "Mismatch",
-      "Needs Review"
+      "Needs Review",
+      "No offers displayed"
     ],
     "retain_original_records": true,
     "preserve_creative_context": true,
@@ -250,9 +251,10 @@
     "raw_specialist_warning_requires_relevance_assessment": true,
     "report_title": "Headline pricing and offer comparison",
     "status_rules": {
-      "Match": "Headline prices and offers agree.",
-      "Mismatch": "A headline price or offer differs, or an advertised offer is absent from the corresponding readable page.",
-      "Needs Review": "A page is unavailable, necessary headline content cannot be read, or there is no identifiable comparable offer."
+      "Match": "Displayed default-view headline prices and offers agree.",
+      "Mismatch": "A default-view headline price or offer differs, or is confirmed absent from the corresponding readable default view.",
+      "Needs Review": "A page is unavailable, necessary default-view headline content is unreadable, or pages cannot meaningfully be compared.",
+      "No offers displayed": "Both readable default page views are explicitly verified to display no headline offers; not a Match."
     },
     "supporting_details_can_block_match": false,
     "requirements_result_required": false,
@@ -260,8 +262,8 @@
     "historical_reports": "preserve_unchanged; no automatic relabeling"
   },
   "comparison": {
-    "basis": "headline_pricing_and_offer_comparison",
-    "scope_version": "headline-offers-v1",
+    "basis": "default_view_headline_pricing_and_offers",
+    "scope_version": "default-view-headlines-v1",
     "creative_name_role": "supporting_context_only",
     "tracking_parameters": "preserve_unchanged_do_not_validate_against_inventory",
     "legacy_extra_columns": "ignore_unneeded_metadata",
@@ -287,7 +289,11 @@
       "nonmaterial_formatting_and_layout",
       "browser_device_testing_desktop_mobile_tablet",
       "cross_device_parity",
-      "layout_comparison"
+      "layout_comparison",
+      "alternate_product_tabs",
+      "alternate_speed_or_line_selectors",
+      "offer_carousel_navigation",
+      "provider_detail_panels"
     ],
     "field_selection": "Extract in-scope primary fields rather than comparing raw full-card text; ignore excluded clauses even when adjacent.",
     "missing_supporting_details": "nonblocking_no_result_impact",
@@ -301,8 +307,9 @@
       "browser_device_coverage_required": false,
       "layout_comparison": false,
       "missing_mobile_tablet_capture_alone": "nonblocking_no_result_impact",
-      "product_views": "Apple/Android product tabs and other offer selectors remain relevant when they reveal different advertised products, prices or offers",
-      "primary_views_coverage": "necessary product-offer headlines within the existing single browser setting, not browser-device variants"
+      "product_views": "Only the initially selected view, including scrolling; alternate product, speed and line views are excluded even when saved.",
+      "default_view_coverage": "Readable headline/card content on the initial page, including scrolling; no interaction-state completeness requirement.",
+      "allowed_state": "advertised baseline only"
     }
   },
   "disabled_checks": {
@@ -368,13 +375,19 @@
       "report_batch_provenance_and_capture_windows": "implemented; relative age and freshness assessment recorded by Scout in the delivered summary",
       "automatic_maximum_age_enforcement": "not implemented; review applies an explicit user/approved limit"
     },
-    "scope": "Existing comparison/checks/results rules remain unchanged. Workflow metadata documents the protocol; it does not implement freshness gates, scheduling or refresh submission.",
+    "scope": "New audits use default-view-headlines-v1. The capture object retains the recorded transport/profile capabilities for compatibility with immutable saved batches; the comparison scope below overrides its broader legacy interaction capabilities.",
     "browser_capture_policy": {
       "setting": "existing single Chromium profile and viewport, consistent for both URLs",
       "profile_id_is_implementation_detail": true,
       "separate_browser_device_runs": false,
       "cross_device_parity_required": false,
-      "runtime_note": "Documentation/reviewer policy only; does not change capture execution or automatically remove submitted gaps. See docs/run.md#runtime-follow-up."
+      "runtime_note": "The maintained runner disables alternate offer navigation for default-view-headlines-v1; comparison rejects alternate-state citations and requires fresh scope-tagged reviews. Existing capture profile/settings remain compatible with saved batches."
+    },
+    "default_view_capture": {
+      "scroll": true,
+      "alternate_offer_interactions": false,
+      "dismiss_known_obstructing_consent": true,
+      "review_scope": "default-view-headlines-v1"
     }
   }
 }

@@ -7,7 +7,8 @@ const {createServer}=require('node:http');
 const {run}=require('./capture.cjs');
 const config=require('../config/audit-config.json');
 
-test('standalone discovery captures product tabs and never opens terms',async()=>{
+for(const defaultOnly of [false,true]){
+test(defaultOnly ? 'default-view capture skips alternate tabs and rejects action plans' : 'legacy discovery captures product tabs and never opens terms',async()=>{
  const dir=await mkdtemp(path.join(tmpdir(),'scout-batch-tabs-'));
  const server=createServer((req,res)=>res.end(`<!doctype html><main><h1>Mobile and Internet plans</h1>
  <p>${'Compare our mobile offers and internet plans. '.repeat(6)}</p>
@@ -23,17 +24,25 @@ test('standalone discovery captures product tabs and never opens terms',async()=
  const url='http://127.0.0.1:'+server.address().port;
  const input={audit_id:'tabs',revision:'fixture',runner_revision:'fixture',inventory_revision:'fixture',
  config_version:5,settings:config.capture,region:'test',autonomous_headline_tabs:true,
+ ...(defaultOnly ? {comparison:{scope_version:'default-view-headlines-v1'}} : {}),
  targets:[{key:'entry-001',original:url,prepared:url,roles:['vanity']}]};
  try{
+  if(defaultOnly){
+    await assert.rejects(run(input,dir,{}, {reopen:true}),/Default-view capture/);
+    await assert.rejects(run(input,dir,{'entry-001':[{id:'android',label:'Android',surface:'product-tab',reason:'test',expected:{selected:true,text:'Android Galaxy'}}]}),/Default-view capture/);
+  }
   await run(input,dir,{});
   const c=JSON.parse(await readFile(path.join(dir,'entry-001/capture.json'),'utf8'));
-  const a=c.attempts[0];assert.equal(a.ready,true);assert.equal(a.actions.length,2);
+  const a=c.attempts[0];assert.equal(a.ready,true);assert.equal(a.actions.length,defaultOnly ? 0 : 2);
   assert.ok(a.actions.every(x=>['captured','already-in-state','equivalent-evidence'].includes(x.outcome)));
   const states=await Promise.all(a.states.map(s=>readFile(path.join(dir,'entry-001',s.json),'utf8')));
-  assert.ok(states.some(s=>JSON.parse(s).visibleText.includes('Android Galaxy $10/month')));
+  assert.equal(states.some(s=>JSON.parse(s).visibleText.includes('Android Galaxy $10/month')),!defaultOnly);
+  if(defaultOnly){assert.equal(c.capture_scope,'default-view-headlines-v1');assert.equal(a.states.length,1);assert.equal(a.states[0].id,'baseline');assert.ok(a.scroll.reachedEnd);}
   assert.ok(states.every(s=>!JSON.parse(s).visibleText.includes('UNEXPECTED TERMS')));
  }finally{await new Promise(r=>server.close(r));await rm(dir,{recursive:true,force:true});}
 });
+
+}
 
 test('capture packaging accounts for missing inputs/files; storage is immutable and verified',async()=>{
  const {packageBatch,safePath}=await import('./package-batch.mjs');

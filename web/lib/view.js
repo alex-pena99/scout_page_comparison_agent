@@ -2,6 +2,7 @@ const statuses = [
   ['Match', 'match'],
   ['Mismatch', 'mismatch'],
   ['Needs Review', 'review'],
+  ['No offers displayed', 'no-offers'],
 ];
 
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({

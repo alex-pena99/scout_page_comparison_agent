@@ -97,6 +97,79 @@ class HeadlineComparisonTest(unittest.TestCase):
                 'banner': 'clear', 'primary_views': 'complete', 'basis': 'Reviewed the saved baseline'}
         self.assertEqual(self.status(), 'Needs Review')
 
+class DefaultViewComparisonTest(unittest.TestCase):
+    def setUp(self):
+        self.capture = copy.deepcopy(CAPTURE)
+        self.capture['states']['baseline'].update(id='baseline', presentation='advertised')
+        self.available = {'vanity': self.capture, 'tracking': self.capture}
+        self.review = {'correspondence': 'corresponding',
+                       'vanity': self.side({'prices': ['$35/month']}),
+                       'tracking': self.side({'prices': ['$35/month']})}
+
+    def side(self, fields, unreadable=False):
+        result = side(fields, unreadable=unreadable)
+        result['coverage'] = {'banner': 'clear', 'default_view': 'incomplete' if unreadable else 'complete',
+                              'basis': 'Read the baseline including scrolled content; alternate views excluded'}
+        for gap in result['gaps']:
+            gap['scope'] = 'default_view'
+        return result
+
+    def status(self):
+        return decide(self.review, self.available, ['Tracking page unavailable'], default_only=True)[0]
+
+    def test_empty_field_lists_cannot_produce_match(self):
+        self.review['vanity'] = self.side({'prices': []})
+        self.review['tracking'] = self.side({'prices': []})
+        self.assertEqual(self.status(), 'Needs Review')
+
+    def test_default_agreement_requires_no_alternate_views(self):
+        self.assertEqual(self.status(), 'Match')
+
+    def test_visible_difference_and_confirmed_one_sided_absence(self):
+        self.review['tracking'] = self.side({'prices': ['$45/month']})
+        self.assertEqual(self.status(), 'Mismatch')
+        self.review['tracking'] = self.side({})
+        self.assertEqual(self.status(), 'Mismatch')
+
+    def test_unreadable_and_unavailable_are_still_review(self):
+        self.review['tracking'] = self.side({}, unreadable=True)
+        self.assertEqual(self.status(), 'Needs Review')
+        self.available['tracking'] = None
+        self.assertEqual(self.status(), 'Needs Review')
+
+    def test_both_empty_require_explicit_verified_no_offers(self):
+        for role in self.available:
+            self.review[role] = self.side({})
+        self.assertEqual(self.status(), 'Needs Review')
+        for role in self.available:
+            self.review[role]['no_offers_displayed'] = True
+        self.assertEqual(self.status(), 'No offers displayed')
+        self.review['tracking']['gaps'] = self.side({}, unreadable=True)['gaps']
+        with self.assertRaisesRegex(ValueError, 'cannot contain offers or unresolved gaps'):
+            self.status()
+        self.available['tracking'] = None
+        self.assertEqual(self.status(), 'Needs Review')
+
+    def test_alternate_state_cannot_support_default_review(self):
+        self.capture['states']['baseline']['id'] = 'android'
+        with self.assertRaisesRegex(ValueError, 'alternate interaction states'):
+            self.status()
+
+    def test_old_coverage_and_gaps_must_be_reassessed(self):
+        self.review['tracking']['coverage']['primary_views'] = self.review['tracking']['coverage'].pop('default_view')
+        with self.assertRaisesRegex(ValueError, 'default-view assessment'):
+            self.status()
+        self.review['tracking'] = self.side({}, unreadable=True)
+        self.review['tracking']['gaps'][0]['scope'] = 'alternate_tab'
+        with self.assertRaisesRegex(ValueError, 'Only unreadable default-view'):
+            self.status()
+
+    def test_scope_marker_required_for_new_audit(self):
+        from compare import compare, CHECKS, DEFAULT_SCOPE
+        spec = {'comparison': {'scope_version': DEFAULT_SCOPE}, 'config_version': 5, 'checks': list(CHECKS)}
+        with self.assertRaisesRegex(ValueError, 'fresh default-view review'):
+            compare(spec, {}, {'pairs': {}})
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -383,6 +383,7 @@ async function runEntry(browser, input, target, actions, output, job) {
   const result = previous || {
     audit_id:input.audit_id, revision:input.revision, instruction_commit:input.revision,
     runner_revision:input.runner_revision, inventory_revision:input.inventory_revision,
+    ...(input.comparison?.scope_version ? {capture_scope:input.comparison.scope_version} : {}),
     config_version:input.config_version, clock_origin_utc_ms:performance.timeOrigin, capture_config_hash:digest(JSON.stringify(settings)), region:input.region,
     target, profile:{viewport:settings.viewport,locale:settings.locale,timezoneId:settings.timezone_id},
     browser:browser.version(), runType:'initial', started:now(), attempts:[],
@@ -472,7 +473,7 @@ async function runEntry(browser, input, target, actions, output, job) {
       }
       if (!reuse) {
         attempt.scroll = await track('scrolling',()=>scrollPage(page,remaining));
-        if (input.autonomous_headline_tabs) {
+        if (input.autonomous_headline_tabs || input.dismiss_known_consent) {
           const consent=page.getByRole('button',{name:'Continue without changes',exact:true}).filter({visible:true});
           if(await consent.count()===1){
             const known=await consent.evaluate(el=>{for(let n=el.parentElement;n;n=n.parentElement){
@@ -593,6 +594,12 @@ async function run(input, output, plan, options = {}) {
     throw new Error('Unsupported capture configuration');
   }
   validatePlan(plan,input.targets);
+  if (input.comparison?.scope_version === 'default-view-headlines-v1') {
+    if (Object.values(plan).some(actions=>actions.length) || options.reopen || options.followups) {
+      throw new Error('Default-view capture cannot run alternate offer actions or followups');
+    }
+    input = {...input, autonomous_headline_tabs:false, dismiss_known_consent:true};
+  }
   const max = input.settings.max_concurrent_page_captures;
   if (!Number.isInteger(max) || max<1 || max>4) throw new Error('Invalid capture concurrency');
   if (new Set(input.targets.map(t=>t.key)).size!==input.targets.length ||

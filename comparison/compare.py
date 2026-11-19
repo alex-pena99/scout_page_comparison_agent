@@ -13,6 +13,7 @@ FIELDS = ('product', 'prices', 'savings', 'benefits', 'promo_codes', 'durations'
 GAP_FIELDS = ('section_or_action', 'affected_headline_offer', 'necessary_headline_field_unreadable',
               'why_existing_headline_evidence_is_insufficient', 'affected_checks_and_records')
 SAFE_FILE = re.compile(r'[a-z0-9][a-z0-9-]{0,79}\.(?:json|png|zip)')
+DEFAULT_SCOPE = 'default-view-headlines-v1'
 
 
 def read(path):
@@ -54,6 +55,9 @@ def load_captures(spec, evidence):
             if not attempt['ready']:
                 continue
             for state in attempt['states']:
+                if spec['comparison'].get('scope_version') == DEFAULT_SCOPE and (
+                        state['id'] != 'baseline' or state.get('presentation') != 'advertised'):
+                    continue
                 data = read(directory / safe_file(state['json']))
                 if any(data[field] != state[field] for field in ('name', 'id', 'json', 'png', 'fingerprint')):
                     raise ValueError(f'{key} state does not match its checkpoint')
@@ -84,27 +88,39 @@ def normalize(text, field):
     return text
 
 
-def reviewed_side(side, capture):
-    if set(side) - {'offers', 'gaps', 'finding', 'evidence', 'coverage'} or not side['finding'].strip():
+def reviewed_side(side, capture, default_only=False):
+    allowed = {'offers', 'gaps', 'finding', 'evidence', 'coverage'} | ({'no_offers_displayed'} if default_only else set())
+    if set(side) - allowed or not side['finding'].strip():
         raise ValueError('Each reviewed side needs a finding and only supported fields')
     gaps = side.get('gaps', [])
     for gap in gaps:
-        if set(gap) != set(GAP_FIELDS) or any(not str(value).strip() for value in gap.values()):
-            raise ValueError('Describe each necessary headline evidence gap in all five fields')
+        fields = set(GAP_FIELDS) | ({'scope'} if default_only else set())
+        if set(gap) != fields or any(not str(value).strip() for value in gap.values()):
+            raise ValueError('Describe each necessary headline evidence gap in all required fields')
+        if default_only and gap['scope'] != 'default_view':
+            raise ValueError('Only unreadable default-view evidence can create a comparison gap')
     coverage = side.get('coverage')
-    if 'entry' in capture:
-        if (not isinstance(coverage, dict) or set(coverage) != {'banner', 'primary_views', 'basis'} or
+    view_field = 'default_view' if default_only else 'primary_views'
+    if 'entry' in capture or default_only:
+        if (not isinstance(coverage, dict) or set(coverage) != {'banner', view_field, 'basis'} or
                 coverage['banner'] not in ('clear', 'obstructed', 'uncertain') or
-                coverage['primary_views'] not in ('complete', 'incomplete', 'uncertain') or
+                coverage[view_field] not in ('complete', 'incomplete', 'uncertain') or
                 not isinstance(coverage['basis'], str) or not coverage['basis'].strip()):
-            raise ValueError('Saved capture needs an explicit banner and primary-view assessment')
-        if (coverage['banner'] != 'clear' or coverage['primary_views'] != 'complete') and not gaps:
+            raise ValueError('Saved capture needs an explicit banner and '+('default-view' if default_only else 'primary-view')+' assessment')
+        if (coverage['banner'] != 'clear' or coverage[view_field] != 'complete') and not gaps:
             raise ValueError('An obstructed or incomplete saved capture needs a necessary evidence gap')
+    if default_only and 'no_offers_displayed' in side:
+        if not isinstance(side['no_offers_displayed'], bool):
+            raise ValueError('No-offer assessment must be explicit true or false')
+        if side['no_offers_displayed'] and (side['offers'] or gaps):
+            raise ValueError('Confirmed no offers cannot contain offers or unresolved gaps')
     evidence = {}
     for item in side['evidence']:
         if set(item) - {'state', 'quotes', 'source'} or item.get('source', 'text') not in ('text', 'image'):
             raise ValueError('Use only text or image evidence from a named capture state')
         data = capture['states'][item['state']]
+        if default_only and (data.get('id') != 'baseline' or data.get('presentation') != 'advertised'):
+            raise ValueError('Default-view review cannot cite alternate interaction states')
         if item.get('source') == 'image':
             if not data['png']:
                 raise ValueError('An image transcription requires a saved screenshot')
@@ -136,7 +152,7 @@ def reviewed_side(side, capture):
     return offers
 
 
-def decide(review, available, blockers):
+def decide(review, available, blockers, default_only=False):
     """Compare aligned offers. Independent differences take precedence over gaps."""
     if set(review) - {'correspondence', 'reason', *ROLES}:
         raise ValueError('Invalid pair review fields')
@@ -145,11 +161,15 @@ def decide(review, available, blockers):
     correspondence = review['correspondence']
     if correspondence not in ('corresponding', 'unrelated', 'uncertain'):
         raise ValueError('Choose an explicit correspondence result')
+    if default_only and all(review.get(role, {}).get('no_offers_displayed') is True for role in ROLES):
+        for role in ROLES:
+            reviewed_side(review[role], available[role], default_only=True)
+        return 'No offers displayed', ['Neither readable default page view displays a headline offer']
     if correspondence != 'corresponding':
         if not review['reason'].strip():
             raise ValueError('Explain why there is no identifiable comparable offer')
         return 'Needs Review', [review['reason']]
-    sides = {role: reviewed_side(review[role], capture) for role, capture in available.items()}
+    sides = {role: reviewed_side(review[role], capture, default_only) for role, capture in available.items()}
     gaps = [f"{role.title()} {gap['necessary_headline_field_unreadable']}"
             for role in ROLES for gap in review[role].get('gaps', [])]
     differences = []
@@ -176,16 +196,20 @@ def decide(review, available, blockers):
         return 'Mismatch', differences + gaps
     if gaps:
         return 'Needs Review', gaps
-    if (not vanity and not tracking) or (any('entry' in capture for capture in available.values()) and
+    if (not vanity and not tracking) or ((default_only or any('entry' in capture for capture in available.values())) and
             not any(values for offer in vanity.values() for values in offer['fields'].values())):
         return 'Needs Review', ['No identifiable comparable headline offer']
-    return 'Match', ['Displayed headline pricing and offers agree']
+    return 'Match', ['Displayed headline pricing and offers agree'+(' in the default page views' if default_only else '')]
 
 
 def compare(spec, captures, reviews):
-    if (spec['config_version'] != 5 or spec['comparison']['scope_version'] != 'headline-offers-v1' or
-            len(spec['checks']) != len(CHECKS) or set(spec['checks']) != CHECKS or set(reviews) - {'pairs'}):
+    scope = spec['comparison']['scope_version']
+    default_only = scope == DEFAULT_SCOPE
+    if (spec['config_version'] != 5 or scope not in ('headline-offers-v1', DEFAULT_SCOPE) or
+            len(spec['checks']) != len(CHECKS) or set(spec['checks']) != CHECKS or set(reviews) - {'pairs', 'scope_version'}):
         raise ValueError('Invalid headline review scope')
+    if default_only and reviews.get('scope_version') != DEFAULT_SCOPE:
+        raise ValueError('Create a fresh default-view review; previous broader reviews cannot be relabeled')
     pairs = reviews['pairs']
     rows = []
     used = set()
@@ -202,10 +226,10 @@ def compare(spec, captures, reviews):
             raise ValueError(f'Row {row["row"]} requires a reviewed pair: {pair}')
         if review:
             used.add(pair)
-        status, reasons = decide(review, available, blockers)
+        status, reasons = decide(review, available, blockers, default_only)
         for role, capture in available.items():
             if role in review and capture and (blockers or review.get('correspondence') != 'corresponding'):
-                reviewed_side(review[role], capture)
+                reviewed_side(review[role], capture, default_only)
         if saved:
             for role, key in keys.items():
                 if not key:
@@ -231,6 +255,8 @@ def compare(spec, captures, reviews):
         raise ValueError('Review file contains pairs outside the selected inventory')
     result = {'audit_id': spec['audit_id'], 'runner_revision': spec['runner_revision'],
               'revision': spec['revision'], 'rows': rows}
+    if default_only:
+        result['comparison_scope'] = DEFAULT_SCOPE
     if saved:
         result['capture_batch'] = saved['batch_id']
         result['refresh_requests'] = list(refresh.values())

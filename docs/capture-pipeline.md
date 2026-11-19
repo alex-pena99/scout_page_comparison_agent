@@ -1,6 +1,6 @@
 # Standalone page capture
 
-Latest targeted verification: [headline-view refresh for rows 16 and 20](CAPTURE_HEADLINE_VIEWS_2026_11_19.md).
+Historical broader-scope targeted verification: [headline-view refresh for rows 16 and 20](CAPTURE_HEADLINE_VIEWS_2026_11_19.md).
 
 Captures only: no comparison, verdicts, report publication, or viewer deployment.
 The inventory is the committed CSV, defaulting to all records. Exact duplicate
@@ -12,7 +12,7 @@ Normal Scout audits select a saved batch and read its evidence; they do not laun
 
 ## Browser setting and comparison use
 
-Use the existing single Chromium 1440 × 900 setting consistently for both URLs. The profile name is an implementation identifier, not a requirement to test desktop/mobile/tablet or compare responsive layouts. Apple/Android product tabs and other selectors remain relevant when they change advertised headline products, prices or offers. Scout reads saved rendered text first and uses images only when necessary primary information requires visual reading. Missing mobile/tablet captures alone are not coverage gaps. The packager’s remaining screenshot-availability gate is tracked in [run.md](run.md#runtime-follow-up); this documentation does not change it.
+Use the existing single Chromium 1440 × 900 setting consistently for both URLs. The profile name is an implementation identifier, not a requirement to test desktop/mobile/tablet or compare responsive layouts. Current `default-view-headlines-v1` captures only the initially selected view, including scrolling. Alternate product tabs, speed/line selectors and carousel navigation are excluded. Use an empty offer plan; the runner rejects alternate-action plans and followup mode under this scope. Scout reads saved rendered text first and uses images only when necessary primary information requires visual reading. Missing mobile/tablet captures alone are not coverage gaps. The packager’s remaining screenshot-availability gate is tracked in [run.md](run.md#runtime-follow-up); this default-view change does not change that packaging gate.
 
 ## Resources
 
@@ -111,7 +111,9 @@ is labeled `finished_with_gaps`; it is not an assertion of complete coverage.
 Consumers must select a batch whose inventory, requested rows, profile, and age
 fit the audit. A later small test batch does not supersede a full inventory batch.
 
-Baseline and automatically discovered headline-view screenshots are full-page.
+Current-scope baseline screenshots are full-page. The following richer discovery behavior is retained only for historical `headline-offers-v1` runs; it is disabled for `default-view-headlines-v1`, regardless of the legacy capture profile capability flags. It is not a current completeness requirement.
+
+Baseline and legacy automatically discovered headline-view screenshots are full-page.
 Discovery supports tabs with explicit panels, selected-state ARIA tabs without
 panel IDs, Apple/Android pressed-state toggles, and the observed legacy AT&T
 Internet/Wireless category buttons on `att.com/cfd/` pages. Newly revealed device

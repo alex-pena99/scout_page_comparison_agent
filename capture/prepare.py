@@ -81,8 +81,8 @@ def prepare(args):
     if Path(__file__).with_name('capture.cjs').read_bytes() != runner_bytes:
         raise ValueError('The local runner differs from the pinned runner revision')
     config = json.loads(pinned(instructions, 'config/audit-config.json'))
-    if config['comparison']['scope_version'] != 'headline-offers-v1' or config['config_version'] != 5:
-        raise ValueError('This runner requires config v5 and the headline-offers-v1 scope')
+    if config['comparison']['scope_version'] not in ('headline-offers-v1', 'default-view-headlines-v1') or config['config_version'] != 5:
+        raise ValueError('This runner requires config v5 and a supported headline scope')
     inventory_file = config['inventory']['path']
     inventory_ref = instructions
     pilot = json.loads(pinned(instructions, 'config/pilot-config.json')) if args.pilot else None

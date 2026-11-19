@@ -7,7 +7,7 @@ import { renderReport } from '../web/lib/view.js';
 
 const idPattern = /^[a-z0-9][a-z0-9-]{0,79}$/;
 const filePattern = /^[a-z0-9][a-z0-9-]{0,79}\.(png|json|zip)$/;
-const statusNames = ['Match', 'Mismatch', 'Needs Review'];
+const statusNames = ['Match', 'Mismatch', 'Needs Review', 'No offers displayed'];
 const reportTitle = 'Headline pricing and offer comparison';
 const read = async file => JSON.parse(await readFile(file, 'utf8'));
 

@@ -8,16 +8,16 @@ description: Compare promotional durations and directly stated promotional timin
 ## Shared scope
 **Goal:** Compare headline facts only.
 
-Use [the master](coordinate-scout-audit/SKILL.md), [config](config/audit-config.json), and the selected validated saved batch/offer map. Read already captured primary headline/card and product-tab states; normal audits do not browse, click, or start Playwright. A recheck means inspecting saved evidence in that batch. Request a separate refresh for missing necessary headline states; never silently substitute older evidence. Report capture age/gaps through the master. Report scope/title: **Headline pricing and offer comparison**.
+Use [the master](coordinate-scout-audit/SKILL.md), [config](config/audit-config.json), and the selected validated saved batch/offer map. Read only saved default-page headline/card evidence, including scrolling; normal audits do not browse, click, or start Playwright. A recheck means inspecting saved evidence in that batch. Request a separate refresh only for unavailable or unreadable necessary default-view content; never silently substitute older evidence. Report capture age/gaps through the master. Report scope/title: **Headline pricing and offer comparison**.
 
-Compare saved rendered text first; use screenshots only when needed to read primary offer information, such as an image-only price or an ambiguous extracted code. Do not compare layout or require separate desktop/mobile/tablet runs or cross-device parity. Missing mobile/tablet captures alone never cause Needs Review. Apple/Android product tabs, plan/speed/line selectors and other views remain in scope when they reveal different advertised products, prices or offers; these are product views within the same browser setting.
+Compare saved rendered text first; use screenshots only when needed to read primary offer information, such as an image-only price or an ambiguous extracted code. Do not compare layout or require separate desktop/mobile/tablet runs or cross-device parity. Missing mobile/tablet captures alone never cause Needs Review. Only the initially selected product view is in scope. Do not require or compare alternate Apple/Android tabs, plan/speed/line selections, carousel slides or provider detail panels, even if saved. Missing alternate views never create a gap.
 
 Do not check eligibility, supporting requirements, disclosures, legal wording, redemption procedures, or administrative terms, including when excluded clauses appear inline. Never open terms, FAQs, or disclosure modals. Failed or missing supporting details are nonblocking. Never assume unreadable headline content matches. Preserve supplied URLs and capture security; ignore Creative ID and use Creative Name as context only.
 
 ## Stage 1 — Select primary timing
 **Goal:** Read only duration/timing presented as part of the headline offer.
 
-Examples: "$35/mo for 12 months," "5-year price lock," "3 months free," "60-day money-back guarantee," or an explicit promotion date/range directly in the primary headline/card. Read relevant product tabs when needed. Do not require a duration or date to exist.
+Examples: "$35/mo for 12 months," "5-year price lock," "3 months free," "60-day money-back guarantee," or an explicit promotion date/range directly in the primary headline/card. Use only the default page, including scrolling. Do not require a duration or date to exist.
 
 Exclude dates/periods found only in supporting text, FAQs, terms, disclosure modals, or hidden DOM. Exclude eligibility/service-retention rules, installment/credit schedules outside primary promotional copy, AutoPay activation, first-credit processing, redemption deadlines, and fulfillment estimates. "$35/month" alone is a billing unit; "$420/year savings" alone is annualized savings, not a one-year promotion.
 

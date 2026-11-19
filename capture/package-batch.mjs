@@ -54,7 +54,9 @@ export async function packageBatch(runDir) {
       if(last?.ready && entry.states.some(s=>s.readable&&s.screenshot))entry.status=entry.gaps.length?'captured_with_gaps':'captured';
       else entry.failure=last?.error||'No usable text and screenshot capture';
       // Keep observed controls for future adapters; do not claim all custom UI was explored.
-      entry.coverage='Rendered baseline, configured actions, semantic product/device tabs, and the reviewed AT&T category switch; no disclosures. Other custom controls may require a capture adapter.';
+      entry.coverage=input.comparison?.scope_version==='default-view-headlines-v1'
+        ? 'Default page baseline including scrolling; alternate offer selections and supporting details excluded. Readability still requires review.'
+        : 'Rendered baseline, configured actions, semantic product/device tabs, and the reviewed AT&T category switch; no disclosures. Other custom controls may require a capture adapter.';
     }catch(error){
       if(error.code!=='ENOENT')throw error;
       entry.failure='Capture checkpoint or artifact missing';
@@ -62,6 +64,7 @@ export async function packageBatch(runDir) {
     entries.push(entry);
   }
   const manifest={schemaVersion:1,batchId:input.audit_id,kind:'page-capture-batch',
+    ...(input.comparison?.scope_version ? {captureScope:input.comparison.scope_version} : {}),
     comparisonPerformed:false,createdAt:new Date().toISOString(),
     instructionRevision:input.revision,runnerRevision:input.runner_git_revision,runnerHash:input.runner_revision,
     inventoryRevision:input.inventory_revision,inventoryHash:input.inventory_sha256,

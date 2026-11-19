@@ -10,7 +10,7 @@ import sys
 from zipfile import ZIP_DEFLATED, ZipFile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'comparison'))
-from compare import ROLES, compare, load_captures, read, safe_file, save
+from compare import ROLES, DEFAULT_SCOPE, compare, load_captures, read, safe_file, save
 
 
 TITLE = 'Headline pricing and offer comparison'
@@ -83,7 +83,11 @@ def build(root, output):
             if pair in pairs and pairs[pair] != result['review']:
                 raise ValueError('Equivalent URL pairs have inconsistent reviews')
             pairs[pair] = result['review']
-    if decision != compare(spec, captures, {'pairs': pairs}):
+    reviews = {'pairs': pairs}
+    default_only = spec['comparison']['scope_version'] == DEFAULT_SCOPE
+    if default_only:
+        reviews['scope_version'] = DEFAULT_SCOPE
+    if decision != compare(spec, captures, reviews):
         raise ValueError('Comparison checkpoint disagrees with the captured evidence and selected rows')
     if spec['results']['report_title'] != TITLE:
         raise ValueError('The selected report title is incompatible with this builder')
@@ -146,7 +150,9 @@ def build(root, output):
     date = datetime.fromisoformat(spec['pre_capture_checkpoint_utc'])
     timing = None if saved else capture_time(captures)
     limitations = [
-        'Desktop headline pricing and offers only. Eligibility, complete terms and administrative details are outside scope.',
+        ('Default page views, including scrolling: pricing and offer headlines only. Alternate tabs, speed/line selectors, layout and browser-device testing are excluded.' if default_only else
+         'Headline pricing and offers only in the selected captured views.'),
+        'Eligibility, complete terms and administrative details are outside scope.',
         f'Tracking templates were opened as supplied in {spec["region"]}. No ZIP or address was submitted.',
         f'Instructions {spec["revision"]}. Inventory {spec["inventory_revision"]}. Runner {spec["runner_git_revision"]}.',
     ]
@@ -160,9 +166,11 @@ def build(root, output):
                            'Wall time includes gaps between capture tasks.')
     report = {'id': spec['audit_id'], 'name': TITLE, 'date': date.date().isoformat(),
               'displayDate': date.strftime('%B %d, %Y'),
-              'scope': f'{len(rows)} CSV records · {len(keys)} unique usable entry URLs',
+              'scope': f'{len(rows)} CSV records · {len(keys)} unique usable entry URLs'+(' · Default views only' if default_only else ''),
               'rows': rows, 'captures': panels, 'documents': documents,
               'limitations': limitations, 'captureTiming': timing}
+    if default_only:
+        report['comparisonScope'] = DEFAULT_SCOPE
     if saved:
         report['captureSource'] = saved
     save(output / 'report.json', report)

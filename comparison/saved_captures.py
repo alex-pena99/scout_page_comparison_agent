@@ -159,6 +159,9 @@ def load_saved_captures(spec, evidence):
             state = active.get(item['id'])
             if status == 'unavailable' or not item['readable'] or state is None:
                 continue
+            if spec['comparison'].get('scope_version') == 'default-view-headlines-v1' and (
+                    state['id'] != 'baseline' or state.get('presentation') != 'advertised'):
+                continue
             doc, raw = artifact(evidence, manifest, entry_path(item['json'], key, 'json'))
             text, rendered = artifact(evidence, manifest, entry_path(item['text'], key, 'txt'))
             data = json.loads(raw)
