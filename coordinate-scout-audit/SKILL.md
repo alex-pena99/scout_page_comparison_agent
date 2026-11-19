@@ -1,183 +1,147 @@
 ---
 name: coordinate-scout-audit
-description: Scout's master workflow for comparing advertised pricing and offers across vanity and tracking URLs. Coordinate shared captures and five focused checks, then report Match, Mismatch, or Needs Review for every requested record. Exclude legal/disclosure perfection, AutoPay enrollment mechanics, and commercial-correctness investigations.
+description: Scout's master workflow for headline pricing and offer comparison between supplied vanity and tracking pages. Compare displayed prices/units, basic products/plans, headline savings/rewards/benefits/codes, and promotional durations directly in headlines or offer cards. Exclude all eligibility, terms, disclosures, FAQs, and administrative procedures.
 ---
 
-# Scout — Master Pricing and Offers Guide
+# Scout — Headline pricing and offer comparison
 
-## Purpose and scope
+## Scope and authority
 
-Answer one question: **Do these pages advertise the same prices and offers?**
+Compare ONLY the headline offer presented on each supplied page:
+- Displayed prices and billing units.
+- Basic product or plan names.
+- Headline savings, rewards, discounts, benefits, and promo codes.
+- Promotional durations stated directly in the headline or offer card.
 
-Compare advertised monetary values, promo codes, benefits/inclusions, offer dates/durations, and qualifications that materially change the deal. Preserve terms such as "up to," "per line," "with a bundle," and "with eligible trade-in."
+Read primary offer text/cards, including headline offers farther down the rendered page and relevant product tabs. This is not limited to the first viewport. A headline guarantee such as "60-day money-back guarantee" is an advertised benefit/duration; its detailed terms are not part of the comparison.
 
-Do not audit legal wording, disclosure completeness, internal consistency, commercial correctness, or administrative mechanics. AutoPay enrollment, activation/start windows, first-credit processing, proof/submission procedures, and fulfillment estimates are outside scope. AutoPay or paperless billing as a condition of an advertised price remains in scope.
+Do not check eligibility, bundles/trade-in/AutoPay qualifications, full disclosures, legal wording, detailed requirements, redemption procedures, or administrative terms, even if such conditions appear beside the price. Do not open terms, FAQs, disclosure modals, or supporting-detail panels to complete an offer. Do not investigate commercial correctness or internal consistency. Hidden-loaded references are not headline offers.
 
-The same conflicting statements on both pages do not create a cross-page difference. Do not investigate which is commercially correct. Identical ambiguity is nonblocking when correspondence and cross-page agreement can be established without resolving it.
+This scope overrides older guides and runtime defaults. Missing supporting details and failed disclosure interactions cannot block Match. Never assume unreadable headline text matches. Preserve meaningful headline modifiers such as "from," "up to," the reward type, and per-month/per-line billing units; ignore eligibility clauses rather than making full-card literal text equality a requirement.
 
-Use the five specialists below for their focused checks. This master defines scope and final results; older instructions, raw extraction flags, or runtime warnings must not broaden the audit. Never discard a real in-scope difference to obtain Match.
-
-## Sources
-
-Resolve paths from the repository root:
+## Repository sources
 
 | Source | Path |
 | --- | --- |
 | Inventory | [data/scout-url-inventory.csv](../data/scout-url-inventory.csv) |
 | Capture defaults | [config/audit-config.json](../config/audit-config.json) |
 | Capture execution | [references/capture-execution.md](../references/capture-execution.md) |
-| Development pilot | [config/pilot-config.json](../config/pilot-config.json) |
-| Pricing | [pricing-comparison-workflow-guide.md](../pricing-comparison-workflow-guide.md) |
-| Promo codes | [compare-promo-codes.SKILL.md](../compare-promo-codes.SKILL.md) |
-| Benefits | [compare-benefits-inclusions.SKILL.md](../compare-benefits-inclusions.SKILL.md) |
-| Dates | [compare-dates-durations.SKILL.md](../compare-dates-durations.SKILL.md) |
-| Requirements | [compare-advertised-requirements.SKILL.md](../compare-advertised-requirements.SKILL.md) |
+| Explicit development pilot | [config/pilot-config.json](../config/pilot-config.json) |
+| Headline pricing | [pricing-comparison-workflow-guide.md](../pricing-comparison-workflow-guide.md) |
+| Headline promo codes | [compare-promo-codes.SKILL.md](../compare-promo-codes.SKILL.md) |
+| Headline benefits | [compare-benefits-inclusions.SKILL.md](../compare-benefits-inclusions.SKILL.md) |
+| Direct promotional durations | [compare-dates-durations.SKILL.md](../compare-dates-durations.SKILL.md) |
 
-# Stage 1 — Start
+The legacy [requirements guide](../compare-advertised-requirements.SKILL.md) is disabled for this workflow. Do not run it or require its completion. There are four active checks, not five.
 
-## 1.1 Select records and load instructions
-**Goal:** Establish the requested audit without silently changing its size.
+# Stage 1 — Start and preserve inputs
 
-1. Read this guide, capture config, inventory, and all five specialists from one recorded commit.
-2. Use every inventory record unless the user supplies a filter.
-3. For an explicitly requested pilot, use its pinned inventory revision/hash and exact record guards. Record both revisions; abort invalid pilot selection before capture, never fall back to the full inventory.
-4. Retain source row numbers (header is row 1), account, URLs, position, and Creative Name. Ignore Creative ID in legacy inputs; it is not an audit field.
-5. Record audit ID, start time, selected records, and desktop coverage. If a required source cannot load, record the blocker; do not pretend the check ran.
+## 1.1 Load the requested audit
+**Goal:** Establish reproducible scope and keep every requested record.
 
-## 1.2 Verify capture capability
-**Goal:** Confirm the dedicated runtime can obtain page evidence.
+1. Read this guide, config, active specialists, and inventory from one recorded commit.
+2. Use all inventory records unless the user supplies a filter. Preserve source rows, including duplicate mappings; header is CSV row 1.
+3. For an explicit pilot, verify its pinned inventory/hash and exact selection. Abort invalid selection before capture; never fall back to all records. Record both instruction and pilot-inventory revisions.
+4. Preserve Account, Vanity URL, Tracking URL, Position, and Creative Name. Ignore Creative ID in legacy inputs. Creative Name is context, not a result gate.
+5. Record audit ID, timestamps, instruction/runner revisions, config version, and report scope. Label every new report exactly **Headline pricing and offer comparison**.
 
-Use the configured capture routine and Chromium, not the PM's personal browser. Verify actual launch/capture capability. A runtime-wide failure leaves selected records Needs Review; do not substitute an empty comparison.
+## 1.2 Prepare navigation
+**Goal:** Compare supplied experiences without repairing campaign routing.
 
-# Stage 2 — Prepare
+Preserve original URLs and every parameter, including c=, placeholders, and query order. For navigation only, trim surrounding whitespace, add https:// when absent, permit browser encoding, and follow normal redirects. Never invent click values or replace {lpurl}. A placeholder alone is not an error. Missing/unusable inputs require review, not a substitute landing page.
 
-## 2.1 Preserve usable inputs
-**Goal:** Test the supplied links without campaign validation.
+# Stage 2 — Capture headline evidence
 
-1. Parse the CSV using its five headers: Account, Vanity URL, Tracking URL, Position, Creative Name.
-2. Retain partially populated records. Missing or unusable URLs require review, not substitution with a root page.
-3. For navigation only, trim surrounding whitespace and add https:// when absent.
-4. Open tracking templates as supplied. Preserve all parameters, including c=, placeholders, and query order; ordinary browser encoding and redirects are allowed.
-5. Do not invent click values, replace {lpurl}, or compare parameters against campaign metadata. Placeholder presence alone is not a problem.
-6. Use Creative Name only as supporting context; a label disagreement alone cannot change a result.
+## 2.1 Capture and reuse
+**Goal:** Obtain readable headline offers with minimal repeated work.
 
-## 2.2 Plan reusable work
-**Goal:** Capture once and reuse evidence across records and checks.
+1. Use dedicated Chromium and equivalent desktop settings from config; never the PM's personal browser. Verify actual capture capability.
+2. Deduplicate exact entry requests within the audit, preserving row mappings and distinct tracking templates. Do not merge merely because redirects look alike.
+3. Keep the continuously filled four-worker queue, isolated entry contexts, bounded page reuse, existing timeouts, and shared retry/recheck budgets in the execution reference.
+4. Capture one baseline and read rendered headline/offer-card text, scrolling for headline cards and lazy content. Use screenshots when primary text is image-based or unreadable by extraction.
+5. Relevant product tabs or headline-offer selectors/carousels may expose additional headline offers. Select equivalent product/device views and verify the selected state and associated headline content. Do not open supporting details, terms, FAQs, or disclosure modals.
+6. Save original/navigation/final URLs, text/visual evidence, locations, and relevant selected views. Hidden-loaded data may be diagnostic but cannot establish headline parity.
 
-Key reuse by original/prepared full URL, capture settings, and relevant state within the same run. Do not merge different tracking templates because their destinations look alike. Preserve every original record and row mapping. Reuse conclusions only for equivalent captures and comparison scope.
+## 2.2 Handle controls and gaps
+**Goal:** Keep capture optimizations without turning optional details into blockers.
 
-# Stage 3 — Capture
+Skip disabled actions and never repeat unchanged failures. Verify state changes instead of fixed sleeps; dismiss an unsolicited blocking overlay safely and verify closure before continuing. Do not intentionally open disclosure content. No force-clicking, TLS/certificate bypass, access-control bypass, checkout, or form submission.
 
-## 3.1 Read advertised content first
-**Goal:** Capture prices and offers without exhaustively opening every page control.
+Use an existing valid baseline and same-entry page when practical; reopen only for a necessary missing headline state. Do not repeat full baseline/scroll/screenshots automatically. Stay within the existing page/context cap and cumulative deadlines. Save operation timings and runner provenance.
 
-1. Apply config/audit-config.json and references/capture-execution.md. Keep existing desktop settings/timeouts and four concurrent captures. Use a continuously filled queue: start the next ready entry when a slot frees, without fixed-batch or whole-pass barriers.
-2. Follow redirects and verify meaningful rendered content. Network-idle or dollar presence alone does not prove readiness.
-3. Read the rendered page, scrolling for lazy content. Identify offer-bearing sections and product tabs; inspect distinct advertised offer views on both sides.
-4. Save original/navigation/final URLs, text, offer locations, selected views, and timestamps. Use screenshots for image-based offers or unclear visual associations.
-5. Keep hidden-loaded references separate. Extraction may retain them diagnostically; they do not establish active offers.
-6. Capture one baseline per entry, then reuse the same page for planned offer states when practical. Keep at most four live capture pages/contexts, isolated between entry URLs. If reopening is necessary, capture the missing state and its prerequisites rather than automatically repeating the full baseline/scroll/screenshots.
-7. Record per-operation timings, queue waits, visits, failed/skipped actions, and scroll/offer-coverage evidence. Record instruction commit, runner revision/content hash, and config version; do not claim the runner uses these policies unless verified.
+Classify missing evidence:
+- Supporting-detail/FAQ/disclosure failures: outside scope, nonblocking, no follow-up required.
+- Unreadable headline price, product, reward, code, or primary offer view: a specific necessary gap; use the shared targeted recheck if possible.
+- Visible evidence of an additional headline offer whose primary content cannot be read: retain that gap; do not infer a match or absence.
 
-## 3.2 Open additional content only for an offer reason
-**Goal:** Obtain necessary offer evidence with minimal interactions.
+A location label difference alone is not a blocker and does not require entering a ZIP. Compare the displayed headline offers; if they differ, report the observed difference without guessing why. An unconfirmed page bottom alone is not a blocker, but unreadable or uncaptured necessary headline content remains one.
 
-Open a panel, accordion, pop-up, FAQ, frame, or supporting detail only when its visible label/context suggests an additional in-scope offer or it is needed to compare an advertised fact. A brand heading alone does not require exhaustive inspection of all its content.
+# Stage 3 — Compare four headline fields
 
-Before opening, record the offer fact or offer-bearing section to verify. Reuse information already captured; do not reopen redundant details merely to complete a UI checklist. Do not inspect legal-policy pages, checkout, forms, or excluded administration.
+## 3.1 Establish correspondence
+**Goal:** Compare recognizable headline experiences and detect changed/absent offers.
 
-For each necessary interaction:
-1. Select the required product/device view before opening dependent disclosures.
-2. Check visibility, enabled state, and obstructions. Skip a currently disabled action, then assess whether its offer evidence is already available or still missing.
-3. Define success before clicking: for example, Android is selected AND its associated offers are visible. Perform the action and wait for that state within the existing interaction timeout; do not rely on a fixed 450 ms delay.
-4. If a modal blocks progress, dismiss it and verify closure before another dependent action. Do not force-click through it.
-5. Do not repeat a failed action against unchanged state. A specific recovery is allowed only within existing shared budgets; retry only after the obstruction/state actually changes.
-6. Stop carousel traversal when all required offers are visible, the control is disabled, or an action yields no new offer state. Preserve any necessary evidence gap rather than manufacturing Match.
+Use readable product/plan names, provider, headline purpose, and surrounding primary offer context. Do not require eligibility or disclosure evidence to establish correspondence. Layout, card order, and row labels alone are not deal differences.
 
-Relevant image-based offer text still needs visual inspection. Do not infer unseen content is irrelevant merely because capture is difficult.
+Within a corresponding readable offer page/catalog, compare headline records and verify apparent omissions against its primary offers/tabs. A confirmed advertised offer missing from that readable counterpart is Mismatch. A clearly changed product in an identifiable corresponding headline offer is also Mismatch; do not force equal prices onto different products.
 
-## 3.3 Classify capture gaps by relevance
-**Goal:** Prevent incidental browser failures from becoming false Needs Review results.
+Use Needs Review when no comparable offer or experience can be identified, such as sales versus unrelated support/default blog content. A blocked or unreadable headline is not a confirmed absence.
 
-After the configured transient retry or targeted recheck:
-- **Nonblocking note:** The failed action concerns excluded content or repeats sufficient, equivalent offer evidence already captured. Record the supporting reason; continue comparison.
-- **Blocking gap:** An in-scope fact, correspondence, or plausibly distinct offer remains unavailable. Name the section, missing evidence, and affected check(s)/records.
-- **Uncertain relevance:** Visible context suggests possible uncaptured offers but relevance cannot be resolved. Keep that specific gap for review; do not assume redundancy.
+## 3.2 Apply active specialists to shared evidence
+**Goal:** Complete the requested comparison without supporting-term investigations.
 
-A timeout is an execution event, not a content finding. It blocks only when it leaves necessary pricing/offer evidence missing. Apply gaps only to records/checks depending on that evidence. No unlimited retries, access-control bypasses, or certificate-warning bypasses.
-
-# Stage 4 — Compare
-
-## 4.1 Pair corresponding offers
-**Goal:** Compare the same deal on both pages.
-
-Use provider, product, plan/speed, device, advertised benefit, and surrounding headings. Share one offer map across all checks. Layout and position alone do not determine correspondence.
-
-Sales versus unrelated customer support is Needs Review, not a list of missing benefits. A confirmed one-sided advertised benefit within a corresponding experience is a real difference after checking the relevant offer context. Keep unresolved association specific and continue independent comparisons.
-
-## 4.2 Apply five focused checks to shared evidence
-**Goal:** Cover pricing and offer information without five separate browsing workflows.
-
-| Specialist | Evaluate |
+| Check | Compare |
 | --- | --- |
-| Pricing | Advertised dollar values, fees, savings, rewards, billing basis, and association with the correct offer. |
-| Promo codes | Exact advertised codes and materially different usage instructions. |
-| Benefits | Reward/device identity, quantity, equipment, installation, included features, and guarantees. |
-| Dates | Offer start/end, promotion length, price locks, guarantee periods, advertised installment/credit periods, and explicit offer/code expiration. |
-| Requirements | Customer status, bundles, AutoPay/paperless conditions, plans, trade-ins, line counts, switching, and other qualifications that materially change the advertised deal. |
+| Pricing | Displayed headline/card prices and billing units, associated basic product/plan, headline savings/reward/discount amounts. |
+| Promo codes | Exact codes advertised in primary headline/card content; no redemption procedures. |
+| Benefits | Headline rewards, devices, included benefits, discounts, and guarantees; no guarantee/eligibility terms. |
+| Dates | Promotional duration/date range stated directly in a headline or offer card; no supporting timelines. |
 
-Read each full specialist guide. Provide the validated rows, shared captures, and offer map; request only missing in-scope evidence. Cross-references are handoffs, not recursive full audits. Share reveals and rechecks across checks and records.
+Reuse shared captures and the same offer map. References are handoffs, not recursive audits. Preserve exact quotes and extract only in-scope fields; ignore excluded clauses even when the raw passage includes them. Do not compare eligibility, including inline eligibility. Retain headline product identity and units without validating who qualifies.
 
-Preserve exact quotes alongside interpretations. Preserve meaningful values, units, qualifiers, and AND/OR logic. Do not treat punctuation, formatting, repeated UI copies, or a different DOM split as a changed deal.
+Use one shared targeted recheck for an uncertain headline value or apparent absence when needed. Continue independent checks after a difference. Unstated optional codes/durations do not need to be supplied or verified. Identical ambiguity/conflicting supporting text does not require commercial interpretation when headline agreement is readable.
 
-## 4.3 Resolve findings without correctness investigations
-**Goal:** Confirm actual cross-page differences and stop unnecessary work.
+# Stage 4 — Save and decide
 
-Recheck an apparent difference or omission once when needed, using equivalent offer states. Do not restart unaffected checks. Preserve changing observations rather than selecting a preferred attempt.
+## 4.1 Save traceable evidence
+**Goal:** Preserve supported results without changing history.
 
-Do not investigate identical internal contradictions or AutoPay start-window mechanics. If material cross-page agreement cannot be established because offer association or relevant content keeps changing, retain that specific uncertainty.
+Checkpoint captures and comparisons through configured durable storage. Retain original records, exact URLs, instruction/runner versions, selected headline views, extracted fields, supporting quotes/images, operation timings, and necessary headline gaps. Keep incidental warnings separate. Resume only compatible work. Disclose saving failures as operational issues, not website mismatches.
 
-Merge duplicate findings from different specialists; retain their check labels. Keep optional notes separate from blocking gaps. Raw INCOMPLETE from an unnecessary interaction is a nonblocking note after relevance assessment, not automatically an incomplete audit.
+Never rewrite historical reports or relabel prior results automatically. A separately requested reassessment creates a new report/version, identifies its evidence date and new scope, and preserves the original.
 
-# Stage 5 — Save and decide
+## 4.2 Assign one result per record
+**Goal:** Apply the PM's three results only to headline prices and offers.
 
-## 5.1 Preserve evidence and progress
-**Goal:** Make results traceable and recoverable.
+1. **Mismatch:** A confirmed headline price or offer differs, or an advertised offer is absent from its corresponding readable page. Mention any additional unreadable headline content without hiding the confirmed difference.
+2. **Needs Review:** No confirmed mismatch establishes the result, and a page is unavailable, necessary headline content cannot be read, or there is no identifiable comparable offer. Include missing/unusable input URLs here.
+3. **Match:** Headline prices and offers agree, with readable evidence for the necessary headline fields.
 
-Save completed captures and comparisons through the configured durable storage, including instruction/runner revisions, source row, exact URLs, settings/time, operation timings, offer associations, supporting passages, check results, blocking gaps, and nonblocking notes. Resume only compatible work from the same audit. Disclose save failures separately; they are not website mismatches.
+Missing supporting terms, failed disclosures, eligibility differences, legal wording, and administrative detail never change these results. A disabled requirements check is not incomplete. No displayed code or duration on either readable counterpart is acceptable. Never assume unreadable headline content matches.
 
-## 5.2 Assign the public result
-**Goal:** Give every record one meaningful outcome.
-
-Apply in order:
-1. **Mismatch:** A confirmed in-scope cross-page difference exists. Mention additional blocking gaps in the reason.
-2. **Needs Review:** No confirmed mismatch establishes the result, but an unusable input, unrelated destination, unresolved offer association, or necessary offer evidence gap prevents comparison.
-3. **Match:** In-scope advertised prices and offers agree, with sufficient evidence for all applicable checks and no blocking gap.
-
-A completed search finding no code/date/benefit on either page is acceptable; missing optional statements are not invented requirements. Excluded details, identical internal contradictions, nonmaterial wording, and unnecessary failed interactions cannot block Match. A possible unseen distinct offer cannot be dismissed without evidence.
-
-| Example | Outcome |
+| Example | Result |
 | --- | --- |
-| $35 versus $45 for the same offer | Mismatch |
-| $100 reward card versus $200 | Mismatch |
-| Both have identical conflicting disclosure statements | No parity blocker; optional note only |
-| AutoPay discount starts within 2 versus 3 bills | Excluded mechanics; no result impact |
-| One page requires AutoPay for $35; the other explicitly does not | Mismatch |
-| Optional panel fails, but equivalent offer facts are already captured | Nonblocking note |
-| Unread panel visibly advertises additional plans unavailable elsewhere | Needs Review for affected comparisons |
+| Same headline prices/rewards; both disclosure buttons fail | Match |
+| Same headline prices; AutoPay/trade-in eligibility wording differs | Match if other headline facts agree |
+| $35/month versus $45/month, or per month versus per year | Mismatch |
+| $100 reward versus $200 reward, or one headline code differs | Mismatch |
+| Readable corresponding catalog omits a headline reward offer | Mismatch |
+| Same "60-day money-back guarantee"; detailed guarantee terms unavailable | Match if other headline facts agree |
+| A primary price image is unreadable after the bounded recheck | Needs Review |
+| Tracking cannot render or leads to unrelated support | Needs Review |
 
-# Stage 6 — Report
+# Stage 5 — Report
 
-## 6.1 Reconcile and deliver
-**Goal:** Give the PM a complete, simple result list.
+## 5.1 Reconcile and deliver
+**Goal:** Return a complete, simple headline comparison.
 
-Confirm every selected row has one result and every applicable specialist has completed its in-scope assessment or identified a specific blocker. Preserve duplicate-row mappings and reconcile totals; reused captures are not independent tests.
+Verify one result for every selected record and reconcile counts. Every active check must have a readable in-scope outcome or a specific necessary gap; a completed search finding no optional field is sufficient. Do not demand a fifth requirements result.
 
-Return counts followed by:
+Use the report title **Headline pricing and offer comparison**, then counts and:
 
 | Row | Account | Creative | Vanity URL | Tracking URL | Result | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
 
-Use short, specific reasons. For a genuine gap, say what remains unverified and what already agrees, for example: "Checked offers agree; additional AT&T plan prices could not be inspected." Do not report only "panel timeout."
+Keep reasons specific: "$35/mo versus $45/mo," "Headline reward absent," or "Tracking price card unreadable." Do not use "eligibility unverified" or "disclosure blocked" as blockers. Keep technical evidence available without flooding the PM list. Label interrupted runs partial and account for unprocessed records as Needs Review.
 
-Keep nonblocking notes and detailed evidence available for follow-up; do not flood the PM report. State desktop advertised-pricing/offer scope once. Match is a parity result, not certification of every page detail or commercial correctness. Label interrupted runs partial and account for unprocessed records as Needs Review.
+Match means headline parity in the completed desktop view, not complete terms, commercial correctness, all-market coverage, or customer eligibility.

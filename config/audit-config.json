@@ -1,5 +1,5 @@
 {
-  "config_version": 4,
+  "config_version": 5,
   "inventory": {
     "path": "data/scout-url-inventory.csv",
     "required_columns": [
@@ -16,8 +16,7 @@
     "pricing",
     "promo_codes",
     "benefits_inclusions",
-    "dates_durations",
-    "advertised_requirements"
+    "dates_durations"
   ],
   "tracking_urls": {
     "mode": "as_supplied",
@@ -32,7 +31,7 @@
     "observation_label": "supplied tracking template; not a simulated resolved ad click"
   },
   "capture": {
-    "profile_id": "desktop-pricing-offers-v3",
+    "profile_id": "desktop-headline-offers-v1",
     "browser": "chromium",
     "headless": true,
     "viewport": {
@@ -62,16 +61,20 @@
       "entire_rendered_page": true,
       "scroll_for_lazy_content": true,
       "relevant_product_tabs": true,
-      "offer_details": true,
-      "promotional_accordions": true,
-      "promotional_popups": true,
-      "directly_relevant_faqs": true,
+      "headline_offer_selectors_and_carousels": true,
+      "offer_details": false,
+      "promotional_accordions": false,
+      "promotional_popups": false,
+      "directly_relevant_faqs": false,
+      "terms": false,
+      "disclosure_modals": false,
+      "supporting_detail_panels": false,
       "relevant_promotional_image_text": true,
-      "relevant_iframes_and_shadow_roots": "target only in-scope offer evidence; block only a necessary unresolved comparison",
+      "relevant_iframes_and_shadow_roots": "only necessary primary headline/card content; no supporting-detail exploration",
       "compare_equivalent_states": true,
       "separate_hidden_loaded_text": true
     },
-    "visual_evidence_policy": "save relevant-state screenshots when needed; visually inspect image-based offer text; saved screenshots alone do not establish review",
+    "visual_evidence_policy": "Read primary image-based headline/card facts when text extraction cannot; screenshots alone do not prove readability. Do not visually audit supporting fine print.",
     "excluded": [
       "mobile",
       "tablet",
@@ -79,36 +82,46 @@
       "checkout",
       "form_submission",
       "unrelated_navigation",
-      "legal_policy_review",
-      "legal_and_disclosure_perfection",
+      "access_control_bypass",
+      "certificate_validation_bypass",
+      "eligibility_rules_even_when_inline",
+      "full_disclosures",
+      "legal_wording",
+      "detailed_or_supporting_requirements",
+      "redemption_procedures",
+      "administrative_terms",
+      "supporting_fine_print",
+      "autopay_bundle_tradein_and_customer_qualifications",
+      "supporting_guarantee_terms",
       "commercial_correctness",
       "internal_consistency_investigations",
-      "autopay_enrollment_activation_and_start_windows",
-      "first_credit_processing",
-      "proof_and_document_submission_procedures",
-      "administrative_redemption_deadlines",
-      "delivery_and_fulfillment_estimates",
-      "dormant_hidden_content_as_active_offers",
-      "nonmaterial_wording_and_layout"
+      "hidden_loaded_content_as_headline_offers",
+      "nonmaterial_formatting_and_layout",
+      "opening_terms",
+      "opening_faqs",
+      "opening_disclosure_modals",
+      "opening_supporting_detail_panels"
     ],
-    "coverage_failure_result": "Needs Review only for necessary unresolved pricing/offer evidence; optional/excluded/redundant failures are notes. Confirmed in-scope differences still establish Mismatch.",
-    "interaction_policy": "Read rendered offers first. Open details only for missing in-scope facts or context suggesting additional distinct offers; reuse sufficient equivalent evidence. No exhaustive disclosure/provider-panel/FAQ checklist.",
-    "surface_flags_meaning": "Eligibility for targeted inspection, not a requirement to open every matching control.",
+    "coverage_failure_result": "Needs Review only for unavailable pages, necessary unreadable headline content, or no identifiable comparable offer. Supporting-detail failures never block Match; independent confirmed headline differences establish Mismatch.",
+    "interaction_policy": "Read primary headline/cards and relevant product tabs or headline-offer selectors only. Do not open terms, FAQs, disclosures, or supporting details to complete an offer.",
+    "surface_flags_meaning": "Only true headline-navigation surfaces may be inspected; false detail/terms/FAQ/disclosure surfaces must not be opened.",
     "gap_assessment": {
       "required_fields": [
         "section_or_action",
-        "affected_offer_or_plausibly_distinct_offer",
-        "missing_in_scope_evidence",
-        "why_existing_evidence_is_insufficient",
+        "affected_headline_offer",
+        "necessary_headline_field_unreadable",
+        "why_existing_headline_evidence_is_insufficient",
         "affected_checks_and_records"
       ],
       "nonblocking": [
-        "excluded_or_unrelated_content",
-        "redundant_detail_with_sufficient_equivalent_evidence"
+        "missing_supporting_details",
+        "failed_terms_faq_or_disclosure_interaction",
+        "excluded_eligibility_or_administrative_content",
+        "redundant_headline_content_already_readable"
       ],
-      "uncertain_relevance": "blocking only when visible context supports possible additional uncaptured in-scope offers; do not assume redundancy",
+      "uncertain_relevance": "Only necessary unreadable primary headline content or an unidentifiable comparable offer blocks. A possible condition/code in supporting details is outside scope.",
       "timeout_alone_is_blocking": false,
-      "do_not_assume_unread_content_irrelevant": true
+      "never_assume_unreadable_headline_matches": true
     },
     "execution_reference": "references/capture-execution.md",
     "execution": {
@@ -124,7 +137,7 @@
         "max_live_pages_and_contexts": 4,
         "isolate_different_entry_urls": true,
         "idle_retention": "bounded by available page slots and the existing cumulative entry budget; release if retaining would block ready work",
-        "on_reopen": "restore only necessary prerequisites; capture missing offer state; repeat baseline only when invalidated"
+        "on_reopen": "restore only necessary headline/product-tab prerequisites; capture missing primary state; repeat baseline only when invalidated"
       },
       "baseline": {
         "capture_once_per_entry_when_valid": true,
@@ -132,7 +145,7 @@
         "revalidate_after_material_page_change": true
       },
       "actions": {
-        "disabled_control": "skip action in current observed state; still assess required offer coverage",
+        "disabled_control": "skip action in current observed state; assess only necessary headline coverage",
         "preflight": [
           "visible",
           "enabled",
@@ -142,16 +155,17 @@
         "obstruction_recovery": "identify obstruction, dismiss if appropriate, verify state changed; remain within existing shared retry/recheck budgets",
         "modal_close_requires_verification": true,
         "force_click_obstructions": false,
-        "order": "required product/device selection before dependent disclosures",
-        "completion": "explicit expected state, including selected control and associated offer content where applicable",
+        "order": "select required product/device headline view; never intentionally open terms, FAQs, supporting panels, or disclosures",
+        "completion": "explicit expected selected product/tab and readable associated primary headline/card content",
         "completion_timeout_source": "capture.timeouts_ms.interaction",
         "fixed_post_click_sleep_ms": 0,
-        "carousel_stop": "required offers already captured, disabled control, repeated state, or no new offers"
+        "carousel_stop": "required headline offers already captured, disabled control, repeated state, or no new primary offers",
+        "modal_policy": "dismiss unsolicited obstructing overlays safely and verify closure; do not open disclosure modals or inspect their terms"
       },
       "scrolling": {
         "record_reached_bottom": true,
         "record_in_scope_offer_coverage_separately": true,
-        "missing_bottom_confirmation": "not an automatic blocker; assess whether relevant lazy offer content is missing",
+        "missing_bottom_confirmation": "not an automatic blocker; assess only necessary primary headline/card content",
         "full_page_screenshot_alone_proves_lazy_content": false
       },
       "telemetry": {
@@ -189,7 +203,8 @@
           "necessary_evidence_gaps"
         ],
         "record_actual_active_worker_intervals": true,
-        "do_not_sum_parallel_durations_as_wall_time": true
+        "do_not_sum_parallel_durations_as_wall_time": true,
+        "offer_state_coverage_definition": "headline/card/product-tab coverage only; supporting terms are excluded"
       },
       "provenance": {
         "required": [
@@ -215,7 +230,8 @@
           "evidence_supported_results"
         ],
         "explain_result_changes": true,
-        "speed_claim_requires_comparable_coverage": true
+        "speed_claim_requires_comparable_coverage": true,
+        "scope_change_notice": "Old broader-scope runs are not equivalent-work baselines unless comparable headline coverage can be established from saved evidence. Preserve originals and explain scope differences; do not automatically relabel them."
       }
     }
   },
@@ -229,43 +245,55 @@
     "preserve_creative_context": true,
     "checkpoint_after_capture_and_comparison": true,
     "durable_storage_required": true,
-    "blocking_scope": "necessary_in_scope_pricing_and_offer_comparison_only",
+    "blocking_scope": "unavailable_page_or_necessary_unreadable_headline_or_no_identifiable_comparable_offer",
     "nonblocking_notes_separate": true,
-    "raw_specialist_warning_requires_relevance_assessment": true
+    "raw_specialist_warning_requires_relevance_assessment": true,
+    "report_title": "Headline pricing and offer comparison",
+    "status_rules": {
+      "Match": "Headline prices and offers agree.",
+      "Mismatch": "A headline price or offer differs, or an advertised offer is absent from the corresponding readable page.",
+      "Needs Review": "A page is unavailable, necessary headline content cannot be read, or there is no identifiable comparable offer."
+    },
+    "supporting_details_can_block_match": false,
+    "requirements_result_required": false,
+    "never_assume_unreadable_headline_matches": true,
+    "historical_reports": "preserve_unchanged; no automatic relabeling"
   },
   "comparison": {
-    "basis": "advertised_pricing_and_offer_parity",
+    "basis": "headline_pricing_and_offer_comparison",
+    "scope_version": "headline-offers-v1",
     "creative_name_role": "supporting_context_only",
     "tracking_parameters": "preserve_unchanged_do_not_validate_against_inventory",
     "legacy_extra_columns": "ignore_unneeded_metadata",
-    "scope_version": "pricing-offers-v3",
     "included": [
-      "advertised_dollar_values_and_billing_basis",
-      "promo_codes",
-      "benefits_and_inclusions",
-      "offer_dates_and_promotional_periods",
-      "material_advertised_qualifications"
+      "displayed_headline_or_primary_offer_card_prices_and_billing_units",
+      "basic_product_or_plan_names",
+      "headline_savings_rewards_discounts_benefits_and_promo_codes",
+      "promotional_durations_stated_directly_in_headline_or_primary_offer_card"
     ],
     "excluded": [
-      "legal_and_disclosure_perfection",
+      "eligibility_rules_even_when_inline",
+      "full_disclosures",
+      "legal_wording",
+      "detailed_or_supporting_requirements",
+      "redemption_procedures",
+      "administrative_terms",
+      "supporting_fine_print",
+      "autopay_bundle_tradein_and_customer_qualifications",
+      "supporting_guarantee_terms",
       "commercial_correctness",
       "internal_consistency_investigations",
-      "autopay_enrollment_activation_and_start_windows",
-      "first_credit_processing",
-      "proof_and_document_submission_procedures",
-      "administrative_redemption_deadlines",
-      "delivery_and_fulfillment_estimates",
-      "dormant_hidden_content_as_active_offers",
-      "nonmaterial_wording_and_layout"
+      "hidden_loaded_content_as_headline_offers",
+      "nonmaterial_formatting_and_layout"
     ],
-    "material_conditions_examples": [
-      "AutoPay or paperless required for an advertised price",
-      "required bundle",
-      "eligible trade-in",
-      "plan or line-count minimum",
-      "new-customer eligibility"
-    ],
-    "identical_internal_contradictions": "nonblocking_optional_note_when_corresponding_advertised_content_agrees",
-    "autopay_start_window_differences": "excluded_no_result_impact"
+    "field_selection": "Extract in-scope primary fields rather than comparing raw full-card text; ignore excluded clauses even when adjacent.",
+    "missing_supporting_details": "nonblocking_no_result_impact",
+    "failed_disclosure_interactions": "nonblocking_no_followup_required",
+    "unreadable_necessary_headline": "Needs Review unless an independent confirmed headline mismatch establishes Mismatch",
+    "location_label_only": "nonblocking; compare observed headlines without ZIP entry",
+    "headline_offer_absence": "Mismatch only when absent from an identifiable corresponding readable page; unreadable content is not absence"
+  },
+  "disabled_checks": {
+    "advertised_requirements": "out_of_scope; skip as internal NOT_APPLICABLE, never a missing check or public blocker"
   }
 }

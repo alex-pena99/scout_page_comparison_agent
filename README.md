@@ -1,83 +1,65 @@
-# Scout — Pricing and Offers
+# Scout
 
-Scout compares the advertised pricing and offers on vanity and tracking pages. The PM asks for an audit and receives **Match**, **Mismatch**, or **Needs Review**, with a short reason.
+**Headline pricing and offer comparison** between supplied vanity and tracking pages.
+
+The PM requests an audit and receives Match, Mismatch, or Needs Review with a short reason. Scout compares headline information only; it does not investigate complete offer terms.
 
 ## Start here
 
-**Every audit starts with [coordinate-scout-audit/SKILL.md](coordinate-scout-audit/SKILL.md).** It is the master protocol: Start → Prepare → Capture → Compare → Save and decide → Report.
+Use [coordinate-scout-audit/SKILL.md](coordinate-scout-audit/SKILL.md) as the master protocol, [config/audit-config.json](config/audit-config.json) for scope/capture settings, and [references/capture-execution.md](references/capture-execution.md) for execution and sandbox implementation requirements.
 
-Read the master, [capture configuration](config/audit-config.json), and the five specialists from the run's recorded commit. Share captures and offer associations; do not launch five independent browsing workflows.
+## Compare only
+
+- Displayed headline/offer-card prices and billing units.
+- Basic product or plan names.
+- Headline savings, rewards, discounts, benefits, and promo codes.
+- Promotional durations stated directly in the headline or offer card.
+
+Read primary offers across the rendered page and relevant product tabs, not just the first viewport. Relevant headline-offer selectors/carousels may be used. Read image-based headline text when necessary. Preserve "from," "up to," reward types, and monthly/per-line units.
+
+## Do not check
+
+Eligibility rules, AutoPay/bundle/trade-in/customer qualifications, detailed requirements, full disclosures, legal wording, redemption procedures, or administrative terms are outside scope, even if qualification clauses appear next to the headline price. Do not compare full raw card strings containing those clauses.
+
+**Do not open terms, FAQs, supporting-detail panels, or disclosure modals to complete an offer.** Missing supporting details or failed disclosure interactions must not block Match. "60-day money-back guarantee" can agree without inspecting how the guarantee works. Never assume unreadable headline content matches.
+
+## Four active comparison guides
 
 | Check | Guide |
 | --- | --- |
-| Pricing | [pricing-comparison-workflow-guide.md](pricing-comparison-workflow-guide.md) |
-| Promo codes | [compare-promo-codes.SKILL.md](compare-promo-codes.SKILL.md) |
-| Benefits | [compare-benefits-inclusions.SKILL.md](compare-benefits-inclusions.SKILL.md) |
-| Dates | [compare-dates-durations.SKILL.md](compare-dates-durations.SKILL.md) |
-| Material requirements | [compare-advertised-requirements.SKILL.md](compare-advertised-requirements.SKILL.md) |
+| Headline pricing and product/plan | [pricing-comparison-workflow-guide.md](pricing-comparison-workflow-guide.md) |
+| Displayed headline codes | [compare-promo-codes.SKILL.md](compare-promo-codes.SKILL.md) |
+| Headline rewards and benefits | [compare-benefits-inclusions.SKILL.md](compare-benefits-inclusions.SKILL.md) |
+| Directly stated promotional durations | [compare-dates-durations.SKILL.md](compare-dates-durations.SKILL.md) |
 
-## What matters
+[compare-advertised-requirements.SKILL.md](compare-advertised-requirements.SKILL.md) is a disabled compatibility stub. Do not run it, demand its completion, or allow it to affect the public result. Creative ID remains unused; Creative Name is context only.
 
-Compare advertised dollar values, fees, savings, rewards, promo codes, included benefits, offer dates/promotional periods, and qualifications that materially change the deal. Preserve relevant billing units, "up to," bundles, AutoPay/paperless price conditions, eligible plans, and trade-ins.
-
-This is **cross-page parity**, not a legal audit or certification of commercial correctness. Exclude disclosure wording/completeness, internal-consistency investigations, AutoPay enrollment/activation/start windows, first-credit processing, document/submission procedures, administrative redemption deadlines, and delivery estimates.
-
-- $35 versus $45, a $100 versus $200 reward, or a genuinely one-sided benefit: **Mismatch**.
-- Same conflicting disclosure passages on both pages: no parity blocker; optional note only.
-- Discount starts within 2 versus 3 bills: excluded mechanics; no result impact.
-- One offer requires AutoPay/bundling for the price and its counterpart does not: compare the material qualification.
-- Formatting, layout, and equivalent paraphrases are not changed deals.
-
-## Capture only what the comparison needs
-
-Read the rendered page and distinct offer-bearing views, scrolling as needed. Open details, panels, FAQs, or frames when their context suggests additional offers or they are needed to understand a material price/offer fact. Reuse sufficient equivalent evidence instead of requiring every redundant panel to open.
-
-A timeout alone is not a reason for Needs Review. Classify it:
-- Excluded or redundant content with sufficient captured offer evidence: nonblocking technical note.
-- Necessary offer evidence or a plausibly distinct offer remains unavailable: a specific blocking gap.
-
-Do not dismiss unread content merely because capture failed. Name the section, why it matters, and the evidence still missing. Apply gaps only to dependent records/checks.
-
-Desktop defaults remain Chromium at 1440 x 900, en-US, America/New_York, equivalent region/settings, isolated contexts, and four concurrent captures. Allow one transient retry and one shared targeted recheck per distinct need. Provisional limits remain 30s navigation, 15s readiness, 10s interaction, and 180s total per entry. Mobile/tablet, ZIP/address entry, checkout, forms, and unrelated navigation remain outside V1. A timeout affects the result only after relevance assessment.
-
-## Inputs and pilot
-
-Use [data/scout-url-inventory.csv](data/scout-url-inventory.csv): **Account, Vanity URL, Tracking URL, Position, Creative Name**. Preserve all records. Ignore Creative ID in legacy inputs. Creative Name is supporting context, never a campaign-validation gate.
-
-Keep tracking URLs and every parameter, including c=, unchanged. For navigation, trim surrounding whitespace, add a missing https:// scheme, permit browser encoding, and follow redirects. Preserve placeholders; do not invent click values or substitute {lpurl}. A placeholder is not an error. These captures observe supplied templates, not simulated resolved ad clicks.
-
-- **Full audit:** No filter means every inventory record at the run's recorded revision.
-- **Explicit development pilot:** [config/pilot-config.json](config/pilot-config.json) selects rows 2, 16, 17, 100, and 111 (header is row 1) from its pinned inventory. Verify the hash and exact five-column guards. Abort invalid selection before capture; never fall back to all 135 records.
-- Record both instruction and pilot-inventory revisions. CSV and pilot selection are unchanged by this scope revision.
-
-## PM report
+## Results and report
 
 | Result | Meaning |
 | --- | --- |
-| Match | In-scope advertised pricing and offers agree with sufficient evidence and no necessary unresolved comparison. |
-| Mismatch | At least one confirmed in-scope difference; mention other necessary gaps if present. |
-| Needs Review | Inputs, unrelated destinations, offer association, or necessary missing evidence prevent comparison and no confirmed mismatch establishes the result. |
+| Match | Headline prices and offers agree. |
+| Mismatch | A headline price or offer differs, or an advertised offer is absent from the corresponding readable page. |
+| Needs Review | A page is unavailable, necessary headline content cannot be read, or there is no identifiable comparable offer. |
 
-Return counts and **Row | Account | Creative | Vanity URL | Tracking URL | Result | Reason**. Explain what already agrees and precisely what remains unverified. Keep optional notes and raw evidence available for follow-up. Match is limited to this desktop advertised-pricing/offer scope, not every page detail.
+An unreadable headline is not proof of absence. A changed product in an identifiable corresponding primary offer can be a mismatch; sales versus unrelated support with no comparable offer requires review. A market/location label alone does not block readable headline agreement or require ZIP entry.
 
-## Capture execution and speed
+Label every new report **Headline pricing and offer comparison**. Return result counts and **Row | Account | Creative | Vanity URL | Tracking URL | Result | Reason**. Use reasons such as "$35/mo versus $45/mo" or "Tracking headline price unreadable," not "eligibility unverified." Match does not certify eligibility, terms, commercial correctness, or all markets/devices.
 
-Follow [references/capture-execution.md](references/capture-execution.md). Config version 4 adds execution behavior while retaining the current pricing/offer scope, four-worker cap, and timeout values:
-- Continuously fill worker slots instead of fixed batches.
-- Skip disabled actions, verify expected offer states and modal closure, and never repeat unchanged failures.
-- Reuse same-entry pages/baselines when practical, with at most four live isolated contexts and targeted reopening.
-- Record per-operation timings and both instruction and runner revisions.
+## Preserve inputs and capture optimizations
 
-The execution reference contains implementation acceptance checks. Configuration alone does not implement the scheduler or interaction behavior. The sandbox capture.cjs and its dependencies must be saved in a maintained code location and updated there; they are not present in this repository.
+The [CSV](data/scout-url-inventory.csv) keeps **Account, Vanity URL, Tracking URL, Position, Creative Name**. Preserve all original records and exact URL values. Navigate supplied tracking templates with all parameters/placeholders intact, adding a missing scheme for navigation only and following normal redirects. Do not replace {lpurl}, fix routing, or compare campaign identifiers.
 
-For a same-work benchmark, obtain the exact earlier 25-record manifest and pinned inventory from the sandbox session. Do not guess a selection, replace the five-record pilot, or run the full inventory as fallback. Compare runtime and offer coverage, preserve earlier evidence, and explain result changes. No 25-record benchmark selection file is created until the actual manifest is available.
+No filter means the full inventory. The existing [five-record pilot](config/pilot-config.json) remains unchanged and uses its pinned inventory/hash and exact row guards; invalid pilot selection must not fall back to all records. The old pilot instruction to read all guides does not activate the disabled requirements stub.
 
-## Runtime integration
+Keep dedicated desktop Chromium (1440 x 900), equivalent locale/region, clean isolated contexts, the continuously filled four-worker queue, bounded same-entry reuse, targeted reopening, state verification, one transient retry/shared targeted recheck, existing timeouts, and operation timings. Do not repeat disabled/unchanged failures. TLS validation, access protections, and source read-only behavior remain intact. See the execution reference for exact limits and acceptance checks.
 
-This repository supplies instructions, configuration, and inventory, not a capture runner. External runners/report aggregators must implement config version 4: classify relevance before converting capture warnings or specialist statuses into a public result. Do not automatically carry forward old blanket timeout/internal-contradiction blockers. Reports already saved are historical; rerun using the updated instructions to reassess them.
+## What the sandbox session still must implement
 
-The intended dedicated runtime uses Playwright/Chromium, such as in Vercel Sandbox, plus durable progress/evidence storage. Configuration does not enforce behavior until the runner uses it. No campaign audit was executed by editing these files.
+This repository contains no maintained capture runner or report-builder code. Config version 5 and the guides define headline-only behavior; they do not update the external runtime automatically.
 
-## Suggested agent instruction
+Update the actual capture.cjs, interaction planner, result aggregator, and report builder to use four active headline checks, stop eligibility/terms/FAQ/disclosure tasks (including old queued tasks), ignore supporting-term failures, preserve genuine unreadable-headline gaps, and use the exact report label in new HTML/exports/metadata. Preserve the capture optimizations and record both runner and instruction versions. The handoff and controlled acceptance cases are in [capture-execution.md](references/capture-execution.md).
 
-> Start with coordinate-scout-audit/SKILL.md. Compare advertised pricing and offers using the shared captures and five focused guides. Exclude disclosure perfection and enrollment mechanics. Return every requested record as Match, Mismatch, or Needs Review; only necessary unresolved offer evidence can block agreement.
+Preserve historical reports and evidence. Do not automatically relabel or rewrite old results. A requested reassessment produces a separate report/version with its evidence date and new scope. Do not claim an equivalent-work speedup against an older broader audit without reconciling headline coverage.
+
+No live audit, deployment, or historical reassessment is performed merely by updating this repository. No new architecture is required.
