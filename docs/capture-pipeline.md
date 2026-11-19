@@ -85,6 +85,8 @@ identity; the current CLI login is not a hosted schedule.
 Without `--capture-only`, the remote command also runs the uploader using its
 host environment. If upload fails, rerun only `storage.mjs publish` against the
 same package. It resumes identical files and rejects conflicting overwrites.
+Temporary storage/network failures retry at most twice; each attempt checks for
+an already stored identical file before writing again.
 Do not rebuild an already published package under the same batch ID.
 
 ## Stored evidence
@@ -94,6 +96,8 @@ screenshots, rendered text, state JSON, timestamps, final URL, and failures.
 Objects are immutable. Every file is checksum-verified after upload and retrieval;
 the manifest is uploaded last. A finished batch can contain failed captures and
 is labeled `finished_with_gaps`; it is not an assertion of complete coverage.
+Consumers must select a batch whose inventory, requested rows, profile, and age
+fit the audit. A later small test batch does not supersede a full inventory batch.
 
 The baseline screenshot is full-page. Standard product tabs with an explicit
 associated panel are discovered automatically, including newly revealed tabs.

@@ -1,6 +1,7 @@
 import {readFile,writeFile,mkdir,lstat} from 'node:fs/promises';
 import {join,dirname} from 'node:path';
 import {pathToFileURL} from 'node:url';
+import {setTimeout as delay} from 'node:timers/promises';
 import {get,put,list} from '@vercel/blob';
 import {hash,safePath} from './package-batch.mjs';
 export const CAPTURE_STORE='store_JwQkhjM0YGiIsrIe';
@@ -30,12 +31,22 @@ export function blobClient(auth){
     async list(prefix,cursor){return list({...auth,prefix,cursor,limit:1000});}
   };
 }
-async function preserve(client,p,bytes){
+async function preserveOnce(client,p,bytes){
   const existing=await client.read(p);
   if(existing){if(hash(existing)!==hash(bytes))throw new Error('Immutable object differs: '+p);return;}
   await client.write(p,bytes);
   const stored=await client.read(p);
   if(!stored||hash(stored)!==hash(bytes))throw new Error('Read-back checksum failed: '+p);
+}
+async function preserve(client,p,bytes){
+  for(let attempt=0;;attempt++){
+    try{return await preserveOnce(client,p,bytes);}catch(error){
+      const temporary=/\b(429|500|502|503|504)\b|fetch failed|ECONNRESET|ETIMEDOUT|network error/i.test(error.message||'');
+      if(!temporary||attempt>=2)throw error;
+      // Re-read before another write: the failed request may already have stored it.
+      await delay(500*(2**attempt));
+    }
+  }
 }
 export async function publish(base,client){
   const bytes=await readFile(join(base,'manifest.json'));

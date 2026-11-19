@@ -58,6 +58,9 @@ test('capture packaging accounts for missing inputs/files; storage is immutable 
   const result=await publish(pkg.base,client);assert.equal(result.filesVerified,Object.keys(pkg.manifest.files).length);
   assert.equal(order.at(-1),'captures/test-batch/manifest.json');
   await publish(pkg.base,client);assert.equal(order.length,result.filesVerified+1);
+  let failedRead=false;
+  const intermittent={...client,read:async p=>{if(!failedRead){failedRead=true;throw new Error('Failed to fetch blob: 500 Internal Server Error');}return client.read(p);}};
+  await publish(pkg.base,intermittent);assert.equal(failedRead,true);assert.equal(order.length,result.filesVerified+1);
   await retrieve('test-batch',path.join(dir,'download'),client,'entry-001');
   assert.match(await readFile(path.join(dir,'download/entries/entry-001/attempt-1-baseline.txt'),'utf8'),/35/);
   objects.set('captures/test-batch/entries/entry-001/attempt-1-baseline.txt',Buffer.from('corrupt'));
