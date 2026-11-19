@@ -30,6 +30,18 @@ does not publish an empty capture batch as a successful run.
 
 ## Capture and store
 
+The uploader is connected to the existing `scout-capture` project in Development
+using short-lived OIDC authentication. The browser sandbox is scoped separately
+to `scout-pm-reports`; its commands receive no storage credentials. The existing
+report-store token is not used. With both CLIs installed and signed in, the full
+capture-and-upload command is:
+
+```sh
+vercel env run --environment development --project prj_XifLZUl5IZ7GE3UZ0krk4tXODxiy --scope centerfield -- node capture/run-remote.mjs
+```
+
+For capture without uploading:
+
 ```sh
 node capture/run-remote.mjs --capture-only
 # Optional explicit small selection:
@@ -58,6 +70,17 @@ node capture/storage.mjs publish RUN_DIRECTORY/capture-package
 node capture/storage.mjs list
 node capture/storage.mjs get BATCH_ID NEW_PRIVATE_DIRECTORY entry-001
 ```
+
+For example, publish an already captured package without creating an env file:
+
+```sh
+vercel env run --environment development --project prj_XifLZUl5IZ7GE3UZ0krk4tXODxiy --scope centerfield -- node capture/storage.mjs publish RUN_DIRECTORY/capture-package
+```
+
+Use the same `vercel env run ... --` prefix for `list` and `get`. This keeps the
+short-lived credential in the host process environment rather than in Git or
+the browser VM. An unattended scheduler will need its own authorized runtime
+identity; the current CLI login is not a hosted schedule.
 
 Without `--capture-only`, the remote command also runs the uploader using its
 host environment. If upload fails, rerun only `storage.mjs publish` against the

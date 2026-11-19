@@ -15,7 +15,15 @@ async function command(cmd,args,options={}){
     child.on('error',fail);child.on('close',code=>code===0?ok(out.trim()):fail(new Error(cmd+' exited '+code+(options.quiet?': '+err.slice(-1000):''))));
   });
 }
-async function remote(args){return command(sandbox,['exec',...scope,config.sandbox,...args]);}
+async function sandboxCommand(args){
+ const env={...process.env};
+ // Use the Sandbox CLI's own authorized login. The uploader's project-scoped
+ // OIDC identity and storage secrets must not influence browser provisioning.
+ for(const key of ['VERCEL_OIDC_TOKEN','SCOUT_CAPTURE_OIDC_TOKEN','SCOUT_CAPTURE_READ_WRITE_TOKEN',
+   'BLOB_READ_WRITE_TOKEN','BLOB_STORE_ID'])delete env[key];
+ return command(sandbox,args,{env});
+}
+async function remote(args){return sandboxCommand(['exec',...scope,config.sandbox,...args]);}
 async function main(){
  const args=process.argv.slice(2);let rows,resume,captureOnly=false;
  while(args.length){const flag=args.shift();if(flag==='--rows')rows=args.shift();else if(flag==='--resume')resume=args.shift();
@@ -35,8 +43,8 @@ async function main(){
   await command('git',['archive','--format=tar.gz','-o',join(runDir,'source.tgz'),revision,'capture','config']);
   await command('tar',['-czf',join(runDir,'inputs.tgz'),'-C',runDir,'input.json','offer-plan.json']);
   await remote(['mkdir','-p',remoteDir]);
-  await command(sandbox,['copy',...scope,join(runDir,'source.tgz'),config.sandbox+':'+remoteDir+'/source.tgz']);
-  await command(sandbox,['copy',...scope,join(runDir,'inputs.tgz'),config.sandbox+':'+remoteDir+'/inputs.tgz']);
+  await sandboxCommand(['copy',...scope,join(runDir,'source.tgz'),config.sandbox+':'+remoteDir+'/source.tgz']);
+  await sandboxCommand(['copy',...scope,join(runDir,'inputs.tgz'),config.sandbox+':'+remoteDir+'/inputs.tgz']);
   await remote(['tar','-xzf',remoteDir+'/source.tgz','-C',remoteDir]);
   await remote(['tar','-xzf',remoteDir+'/inputs.tgz','-C',remoteDir]);
   await remote(['npm','ci','--prefix',remoteDir+'/capture','--ignore-scripts']);
@@ -44,7 +52,7 @@ async function main(){
   try{await remote(['node',remoteDir+'/capture/batch.cjs',remoteDir]);}catch(error){captureError=error.message;}
   // Also recover completed checkpoints if some entries or the runner failed.
   await remote(['tar','-czf',remoteDir+'/evidence.tgz','-C',remoteDir,'evidence']);
-  await command(sandbox,['copy',...scope,config.sandbox+':'+remoteDir+'/evidence.tgz',join(runDir,'evidence.tgz')]);
+  await sandboxCommand(['copy',...scope,config.sandbox+':'+remoteDir+'/evidence.tgz',join(runDir,'evidence.tgz')]);
   await command('tar',['-xzf',join(runDir,'evidence.tgz'),'-C',runDir]);
   const {base,manifest}=await packageBatch(runDir);
   console.log(JSON.stringify({runDirectory:runDir,batchId:manifest.batchId,counts:manifest.counts,captureError}));
